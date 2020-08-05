@@ -1,0 +1,6 @@
+[submodule "src/ml-imagesynthesis"]
+	path = src/ml-imagesynthesis
+	url = https://bitbucket.org/Unity-Technologies/ml-imagesynthesis.git
+[submodule "src/ConFormSimProject/Assets/ConFormSim/External/HelpAttribute"]
+	path = src/ConFormSimProject/Assets/ConFormSim/External/HelpAttribute
+	url = https://github.com/johnearnshaw/unity-inspector-help

@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e05edbf81f1659db28476477ad0c5a68, type: 3}
+  m_Name: BoxworldSettings
+  m_EditorClassIdentifier: 
+  numAreas: 1
+  gridSize: 8
+  solutionLength: 01000000020000000300000004000000
+  numForward: 0000000001000000020000000300000004000000
+  numBackward: 00000000
+  branchLength: 1
+  maxNumSteps: 0
+  randomState: 0
+  keyPrefab: {fileID: 1382546033768696380, guid: 13198a1cdf2e729e0b2b45558a7a21bf,
+    type: 3}
+  lockPrefab: {fileID: 4160735719452219053, guid: 6690b35528a95a7ab93430f06f5e849b,
+    type: 3}
+  gemPrefab: {fileID: 3304234243454358998, guid: 90daaf3c72fc7d65e83d501197db1b65,
+    type: 3}
+  agentPrefab: {fileID: 7738182049720364729, guid: f3cd6110123d92de78f1bc6a569162fa,
+    type: 3}
+  colors:
+  - {r: 0.69803923, g: 0.34901962, b: 0.34901962, a: 1}
+  - {r: 0.69803923, g: 0.45490196, b: 0.34901962, a: 1}
+  - {r: 0.69803923, g: 0.56078434, b: 0.34901962, a: 1}
+  - {r: 0.69803923, g: 0.6627451, b: 0.34901962, a: 1}
+  - {r: 0.627451, g: 0.69803923, b: 0.34901962, a: 1}
+  - {r: 0.5254902, g: 0.69803923, b: 0.34901962, a: 1}
+  - {r: 0.41960785, g: 0.69803923, b: 0.34901962, a: 1}
+  - {r: 0.34901962, g: 0.69803923, b: 0.38431373, a: 1}
+  - {r: 0.34901962, g: 0.69803923, b: 0.49019608, a: 1}
+  - {r: 0.34901962, g: 0.69803923, b: 0.59607846, a: 1}
+  - {r: 0.34901962, g: 0.69803923, b: 0.69803923, a: 1}
+  - {r: 0.34901962, g: 0.5921569, b: 0.69803923, a: 1}
+  - {r: 0.34901962, g: 0.49019608, b: 0.69803923, a: 1}
+  - {r: 0.34901962, g: 0.38431373, b: 0.69803923, a: 1}
+  - {r: 0.41960785, g: 0.34901962, b: 0.69803923, a: 1}
+  - {r: 0.5254902, g: 0.34901962, b: 0.69803923, a: 1}
+  - {r: 0.6313726, g: 0.34901962, b: 0.69803923, a: 1}
+  - {r: 0.69803923, g: 0.34901962, b: 0.6666667, a: 1}
+  - {r: 0.69803923, g: 0.34901962, b: 0.56078434, a: 1}
+  - {r: 0.69803923, g: 0.34901962, b: 0.45490196, a: 1}
+  gemColor: {r: 1, g: 1, b: 1, a: 1}
+  agentColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
