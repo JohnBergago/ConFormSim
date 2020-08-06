@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6c1dafa7ab989962bc5fd9fae13d464, type: 3}
   m_Name: GaussianNoise
   m_EditorClassIdentifier: 
-  amplitude: 0.23
+  amplitude: 0.001

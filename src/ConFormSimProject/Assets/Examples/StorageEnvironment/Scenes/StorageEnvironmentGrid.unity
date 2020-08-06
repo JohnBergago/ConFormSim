@@ -859,9 +859,9 @@ MonoBehaviour:
   areaPrefab: {fileID: 4957084382437876856, guid: 8bd4fb2f15001474badb01eab00a1639,
     type: 3}
   numTrainAreas: 1
-  useVisual: 1
+  useVisual: 0
   useRayPerception: 0
-  useObjectPropertyCamera: 0
+  useObjectPropertyCamera: 1
   colorPool:
   - serializedVersion: 2
     rgba: 4278243073
@@ -1305,7 +1305,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh-6222
+  m_Name: pb_Mesh-163028
   serializedVersion: 9
   m_SubMeshes:
   - serializedVersion: 2

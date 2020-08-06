@@ -173,30 +173,20 @@ namespace ConFormSim.Sensors
                         //adapter.AddRange(featureVec, col + row * m_Width);
                         // we need to flip the feature, otherwise it's upside
                         // down. Apply noise while we're at it. 
-                        // if (noiseFunc != null)
-                        // {
-                        //     featureVec[i] = noiseFunc.Apply(featureVec[i]);
-                        // }
+                        if (noiseFunc != null)
+                        {
+                            featureVec[i] = noiseFunc.Apply(featureVec[i]);
+                        }
                         
                         adapter[m_Height - row - 1, col, i] = featureVec[i];
                     }
 
                     if (featureLayer < featureVec.Length)
                     {
-                        if (noiseFunc != null)
-                        {
-                            float noisyVal = noiseFunc.Apply(featureVec[featureLayer]);
-                            debugImgPixels[col + row * m_Width] = new Color(
-                                noiseFunc.Apply(featureVec[featureLayer]), 
-                                noiseFunc.Apply(featureVec[(featureLayer) % featureVec.Length]), 
-                                noiseFunc.Apply(featureVec[(featureLayer) % featureVec.Length]));
-                        }
-                        else {
-                            debugImgPixels[col + row * m_Width] = new Color(
+                        debugImgPixels[col + row * m_Width] = new Color(
                             featureVec[featureLayer], 
                             featureVec[(featureLayer) % featureVec.Length], 
                             featureVec[(featureLayer) % featureVec.Length]);
-                        }
                         
                     }
                 }

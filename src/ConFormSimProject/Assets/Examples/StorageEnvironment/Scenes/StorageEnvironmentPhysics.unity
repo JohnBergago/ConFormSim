@@ -822,7 +822,7 @@ MonoBehaviour:
   numTrainAreas: 1
   useVisual: 0
   useRayPerception: 0
-  useObjectPropertyCamera: 0
+  useObjectPropertyCamera: 1
   colorPool:
   - serializedVersion: 2
     rgba: 4294905856
