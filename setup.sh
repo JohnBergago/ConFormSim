@@ -15,6 +15,6 @@ git submodule update --init --recursive
 
 # copy the relevant files from ml-imagesynthesis to ConFormSim
 cd src/
-mkdir -p ConFormSimProject/Assets/External/ml-imagesynthesis
-cp ml-imagesynthesis/Assets/* ConFormSimProject/Assets/External/ml-imagesynthesis/
-cp ml-imagesynthesis/LICENSE.TXT ConFormSimProject/Assets/External/ml-imagesynthesis/
+mkdir -p ConFormSimProject/Assets/ConFormSim/External/ml-imagesynthesis
+cp -r ml-imagesynthesis/Assets/ImageSynthesis/* ConFormSimProject/Assets/ConFormSim/External/ml-imagesynthesis/
+cp ml-imagesynthesis/LICENSE.TXT ConFormSimProject/Assets/ConFormSim/External/ml-imagesynthesis/

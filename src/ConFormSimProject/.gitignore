@@ -12,7 +12,7 @@
 /[Mm]odels
 
 /[Aa]ssets/ConFormSim/External/Rotary* 
-/[Aa]ssets/ConFormSim/External/ml-imagesynthesis
+/[Aa]ssets/ConFormSim/External/ml-imagesynthesis/
 /[Aa]ssets/TextMesh*
 
 # Never ignore Asset meta data
