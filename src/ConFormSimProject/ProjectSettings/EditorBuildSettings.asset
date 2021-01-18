@@ -4,5 +4,14 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Examples/StorageEnvironment/Scenes/StorageEnvironmentGrid.unity
+    guid: b62cf751e7d1f80c8a9f2a51812ff285
+  - enabled: 1
+    path: Assets/Examples/StorageEnvironment/Scenes/StorageEnvironmentPhysics.unity
+    guid: 1393bb5e57bca949792fb653122f0175
+  - enabled: 1
+    path: Assets/Examples/Boxworld/Scenes/Boxworld.unity
+    guid: 8d69e3109facc8bdba3a2c0535487bd4
   m_configObjects: {}

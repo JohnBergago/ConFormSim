@@ -26,8 +26,8 @@ The script initializes the
 [ml-imagesythesis](https://bitbucket.org/Unity-Technologies/ml-imagesynthesis/src/master/)
 submodule and the
 [HelperAttribute](https://github.com/johnearnshaw/unity-inspector-help)
-submodule. In case you cannot run the script (i.e. on Windows), change to the
-ConFormSim directory and run:
+submodule. **In case you cannot run the script** (i.e. on Windows), change to
+the ConFormSim directory and run:
 ```bash 
 # download all submodules
 git submodule update --init --recursive

@@ -820,9 +820,9 @@ MonoBehaviour:
   areaPrefab: {fileID: 7768998425737259538, guid: 961ab4dd71550aa709c4ff166d20adae,
     type: 3}
   numTrainAreas: 1
-  useVisual: 0
+  useVisual: 1
   useRayPerception: 0
-  useObjectPropertyCamera: 1
+  useObjectPropertyCamera: 0
   colorPool:
   - serializedVersion: 2
     rgba: 4294905856
