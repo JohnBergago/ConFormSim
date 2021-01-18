@@ -17,6 +17,12 @@
 
 # Never ignore Asset meta data
 !/[Aa]ssets/**/*.meta
+# But ignore these *.meta files from external tools
+/[Aa]ssets/**/ML-Agents.meta
+/[Aa]ssets/**/TextMesh\ Pro.meta
+/[Aa]ssets/**/ml-imagesynthesis.meta
+/[Aa]ssets/**/Rotary\ Heart.meta
+
 
 # Uncomment this line if you wish to ignore the asset store tools plugin
 # /[Aa]ssets/AssetStoreTools*
