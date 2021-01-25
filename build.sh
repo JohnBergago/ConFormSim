@@ -20,7 +20,7 @@ if [ -f $UNITY_PATH ]; then
     # build all unity projects in src folder
     for f in $CONFORMSIM_DIR/src/ConForm*; do
         if [ -d "$f" ]; then
-            $UNITY_PATH -batchmode -nographics -quit -logFile - \
+            TERM=xterm $UNITY_PATH -batchmode -nographics -quit -logFile - \
             -projectPath "$f" -executeMethod BuildFromCommandLine.PerformBuild
             echo "Done with $f"
         fi

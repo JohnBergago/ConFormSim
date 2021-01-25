@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.43667546, g: 0.48427135, b: 0.56452245, a: 1}
+  m_IndirectSpecularColor: {r: 0.71210796, g: 0.72236013, b: 0.7039762, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -782,7 +782,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 8
   m_Type: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -859,14 +859,14 @@ MonoBehaviour:
   areaPrefab: {fileID: 4957084382437876856, guid: 8bd4fb2f15001474badb01eab00a1639,
     type: 3}
   numTrainAreas: 1
-  useVisual: 1
+  useVisual: 0
   useRayPerception: 0
-  useObjectPropertyCamera: 0
+  useObjectPropertyCamera: 1
   colorPool:
   - serializedVersion: 2
-    rgba: 4278243073
+    rgba: 4278255360
   - serializedVersion: 2
-    rgba: 4278321407
+    rgba: 4278190335
   timeScaleText: {fileID: 1829768283}
   agentCountText: {fileID: 2008906028}
   areaSettings:

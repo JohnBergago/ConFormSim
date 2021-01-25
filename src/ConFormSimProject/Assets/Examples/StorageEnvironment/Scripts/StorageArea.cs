@@ -289,7 +289,7 @@ public class StorageArea : MonoBehaviour
         }
 
         // Create color for edges based on the original color
-        Material edgeColor = new Material(Shader.Find("Diffuse"));
+        Material edgeColor = new Material(Shader.Find("Unlit/TextureColored"));
         Color baseColor = baseTile.GetComponent<Renderer>().material.color;
         float H, S, V;
         Color.RGBToHSV(baseColor, out H, out S, out V);

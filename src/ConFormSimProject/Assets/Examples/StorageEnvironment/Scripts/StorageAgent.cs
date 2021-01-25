@@ -155,8 +155,8 @@ public class StorageAgent : Agent
             ObjectPropertyCameraSensorComponent opcsc = gameObject
                 .AddComponent<ObjectPropertyCameraSensorComponent>();
             opcsc.featureVectorDefinition = m_Academy.featureVectorDefinition;
-            opcsc.width = (int) resetProperties.GetWithDefault("visObsWidth", 84);
-            opcsc.height = (int) resetProperties.GetWithDefault("visObsHeight", 84);
+            opcsc.width = (int) resetProperties.GetWithDefault("visObsWidth", 42);
+            opcsc.height = (int) resetProperties.GetWithDefault("visObsHeight", 42);
             debugImg.enabled = true;
             opcsc.debugImg = debugImg;
             switch (m_Academy.cameraType)
