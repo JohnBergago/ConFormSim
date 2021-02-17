@@ -166,6 +166,7 @@ namespace ConFormSim.ObjectProperties
             int id = gameObject.GetInstanceID();
             MaterialPropertyBlock mpb = new MaterialPropertyBlock();
             mpb.SetColor("_ObjectColor", ObjectIDColorEncoding.IDToColor(id));
+            Debug.Log("Set Element with Color: "+ ObjectIDColorEncoding.IDToColor(id));
             // set for all objects in transform this id to be rendered for the
             // object property sensor
             Transform[] childs = new Transform[transform.childCount + 1];

@@ -385,45 +385,58 @@ public class StorageAgent : Agent
         activeAction = false;
     }
 
+    private int m_lastKeyPress;
     public override void Heuristic(float[] actionsOut)
-    {            
-        if (Input.GetKeyDown(KeyCode.W))
+    {        
+        // only do one action per frame when user controlled  
+        if (Time.frameCount != m_lastKeyPress)
         {
-            actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Fwd");
-        }
-        else if (Input.GetKeyDown(KeyCode.S))
-        {
-            actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Bwd");
-        }
-        else if (Input.GetKeyDown(KeyCode.A))
-        {
-            actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Left");
-        }
-        else if (Input.GetKeyDown(KeyCode.D))
-        {
-            actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Right");
-        }
-        else if (Input.GetKeyDown(KeyCode.Q))
-        {
-            actionsOut[0] = aActionProvider.GetActionIDByName(0, "Rotate Left");
-            
-        }
-        else if (Input.GetKeyDown(KeyCode.E))
-        {
-            actionsOut[0] = aActionProvider.GetActionIDByName(0, "Rotate Right");
-        }
-        else if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            actionsOut[0] = aActionProvider.GetActionIDByName(0, "Interact");
-        }
-        else if (Input.GetKeyDown(KeyCode.Space))
-        {
-             actionsOut[0] = aActionProvider.GetActionIDByName(0, "Pick Up");
-        }
+            m_lastKeyPress = Time.frameCount;
+
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Fwd");
+            }
+            else if (Input.GetKeyDown(KeyCode.S))
+            {
+                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Bwd");
+            }
+            else if (Input.GetKeyDown(KeyCode.A))
+            {
+                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Left");
+            }
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Right");
+            }
+            else if (Input.GetKeyDown(KeyCode.Q))
+            {
+                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Rotate Left");
+                
+            }
+            else if (Input.GetKeyDown(KeyCode.E))
+            {
+                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Rotate Right");
+            }
+            else if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Interact");
+            }
+            else if (Input.GetKeyDown(KeyCode.Space))
+            {
+                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Pick Up");
+            }
+            else
+            {
+                actionsOut[0] = aActionProvider.GetActionIDByName(0, "No Action");
+            }
+        }  
         else
         {
+            // No Action if the frame has'nt changed yet
             actionsOut[0] = aActionProvider.GetActionIDByName(0, "No Action");
         }
+        
     }
 
     private void MonitorAction(int action)

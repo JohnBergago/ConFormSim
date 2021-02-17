@@ -83,23 +83,32 @@ public class BoxworldAgent : Agent
         this.MaxStep = m_MyGame.worldSettings.maxNumSteps;
     }
 
+    private int m_lastKeyPress;
     public override void Heuristic(float[] actionsOut)
     {            
-        if (Input.GetKeyDown(KeyCode.W))
+        if (m_lastKeyPress != Time.frameCount)
         {
-            actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Fwd");
-        }
-        else if (Input.GetKeyDown(KeyCode.S))
-        {
-            actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Bwd");
-        }
-        else if (Input.GetKeyDown(KeyCode.A))
-        {
-            actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Left");
-        }
-        else if (Input.GetKeyDown(KeyCode.D))
-        {
-            actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Right");
+            m_lastKeyPress = Time.frameCount;
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Fwd");
+            }
+            else if (Input.GetKeyDown(KeyCode.S))
+            {
+                actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Bwd");
+            }
+            else if (Input.GetKeyDown(KeyCode.A))
+            {
+                actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Left");
+            }
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Right");
+            }
+            else
+            {
+                actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "No Action");
+            }
         }
         else
         {

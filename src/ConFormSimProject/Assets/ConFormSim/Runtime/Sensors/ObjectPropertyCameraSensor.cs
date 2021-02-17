@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using Unity.MLAgents.Sensors;
 using System.Collections.Generic;
 using ConFormSim.ObjectProperties;
+using System.Linq;
 
 namespace ConFormSim.Sensors
 {
@@ -136,6 +137,8 @@ namespace ConFormSim.Sensors
             float[,,] features = new float[m_Height, m_Width, m_PropertyRequester.FeatureVectorLength];
             Color[] debugImgPixels = new Color[m_Height * m_Width];   
 
+            bool nonZero = false;
+            
             // remove old feature vectors and fill new for this frame
             IDToFeatureVecDict.Clear();
             // for debug img we go through from bottom to top
@@ -144,7 +147,8 @@ namespace ConFormSim.Sensors
                 // from left to right
                 for(int col = 0; col < texture.width; col++)
                 {
-                    int id = ObjectIDColorEncoding.ColorToID((Color32)texture.GetPixel(col, row));
+                    int id = ObjectIDColorEncoding.ColorToID(texture.GetPixel(col, row));
+                    // Debug.Log("Read Pixel with ID: "+ id);
                     // check if we already have a vector for this id
                     float[] featureVec;
                     if (!IDToFeatureVecDict.TryGetValue(id, out featureVec))
@@ -168,29 +172,35 @@ namespace ConFormSim.Sensors
                         IDToFeatureVecDict.Add(id, featureVec);
                     }  
 
-                    for( int i = 0; i < featureVec.Length; i++)
+                    if (noiseFunc != null)
                     {
-                        //adapter.AddRange(featureVec, col + row * m_Width);
-                        // we need to flip the feature, otherwise it's upside
-                        // down. Apply noise while we're at it. 
-                        if (noiseFunc != null)
-                        {
+                        for(int i = 0; i < featureVec.Length; i++)
+                        {    
                             featureVec[i] = noiseFunc.Apply(featureVec[i]);
+                            adapter[m_Height - row - 1, col, i] = featureVec[i];
                         }
-                        
-                        adapter[m_Height - row - 1, col, i] = featureVec[i];
+                    }
+                    else
+                    {
+                        adapter.AddRange(featureVec, col + row * m_Width);
                     }
 
                     if (featureLayer < featureVec.Length)
                     {
                         debugImgPixels[col + row * m_Width] = new Color(
-                            featureVec[featureLayer], 
+                            featureVec[(featureLayer) % featureVec.Length], 
                             featureVec[(featureLayer) % featureVec.Length], 
                             featureVec[(featureLayer) % featureVec.Length]);
                         
+                        if (featureVec[featureLayer]!=0)
+                        {
+                            nonZero |= true;
+                        }
                     }
+                    
                 }
             }
+            //Debug.Log("There are non zero Elements: " + nonZero);
             if (debugImg != null)
             {
                 debugTex.SetPixels(debugImgPixels);
@@ -222,12 +232,12 @@ namespace ConFormSim.Sensors
         /// <returns name="texture2D">Texture2D to render to.</returns>
         public static Texture2D ObservationToTexture(Camera obsCamera, int width, int height)
         {
-            var texture2D = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            var texture2D = new Texture2D(width, height, TextureFormat.RGBAFloat, false);
             var oldRec = obsCamera.rect;
             obsCamera.rect = new Rect(0f, 0f, 1f, 1f);
             var depth = 24;
-            var format = RenderTextureFormat.Default;
-            var readWrite = RenderTextureReadWrite.Default;
+            var format = RenderTextureFormat.ARGBFloat;
+            var readWrite = RenderTextureReadWrite.Linear;
 
             var tempRt =
                 RenderTexture.GetTemporary(width, height, depth, format, readWrite);

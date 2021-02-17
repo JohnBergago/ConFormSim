@@ -155,7 +155,6 @@ public class StorageAcademy : MonoBehaviour
         SideChannelsManager.RegisterSideChannel(envListPropertiesChannel);
         
         Academy.Instance.OnEnvironmentReset += EnvironmentReset;
-        //InstantiateAreas();
         featureVectorDefinition = ScriptableObject.CreateInstance<FeatureVectorDefinition>();
     }
 
@@ -222,20 +221,10 @@ public class StorageAcademy : MonoBehaviour
         for(int i = 0; i < areaSettings.baseObjects.Count; i++)
         {
             baseTags.Add(areaSettings.baseObjects[i].tag);
-            // EncodedStringProperty baseTagProp = 
-            //     areaSettings.baseObjects[i]
-            //     .GetComponent<ObjectPropertyProvider>()
-            //     .GetObjectProperty("baseTag") as EncodedStringProperty;
-            // baseTagProperties.Add(baseTagProp.value);
         }
         for(int i = 0; i < itemSettings.interactableObjects.Count; i++)
         {
             interactableTags.Add(itemSettings.interactableObjects[i].tag);
-            // EncodedStringProperty targetTagProp = 
-            //     itemSettings.interactableObjects[i]
-            //     .GetComponent<ObjectPropertyProvider>()
-            //     .GetObjectProperty("targetTag") as EncodedStringProperty;
-            // targetTagProperties.Add(targetTagProp.value);
         }
 
         if(!areasInstantiated)
