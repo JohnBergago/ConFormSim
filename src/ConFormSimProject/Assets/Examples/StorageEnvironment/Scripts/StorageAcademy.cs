@@ -142,6 +142,7 @@ public class StorageAcademy : MonoBehaviour
     public FeatureVectorDefinition featureVectorDefinition;
     public void Awake()
     {
+        Time.timeScale = 20;
         Debug.Log("Timescale: " + Time.timeScale);
         Debug.Log("Screen Width: " + Screen.width);
         Debug.Log("Screen Height: " + Screen.height);

@@ -3,7 +3,6 @@ using UnityEngine.UI;
 using Unity.MLAgents.Sensors;
 using System.Collections.Generic;
 using ConFormSim.ObjectProperties;
-using System.Linq;
 
 namespace ConFormSim.Sensors
 {
@@ -13,16 +12,15 @@ namespace ConFormSim.Sensors
 
         int m_Width;
         int m_Height;
-        bool m_Grayscale;
         string m_Name;
         int[] m_Shape;
         SensorCompressionType m_CompressionType;
 
         /// <summary>
-        /// debug texture in order to see the id separation
+        /// The default feature vector for all pixels that are not covered by
+        /// objects with poperty providers.
         /// </summary>
-        public RawImage debugImg;
-        private int featureLayer;
+        private List<float> m_defaultFeatureVector;
 
         /// <summary>
         /// The Camera used for rendering the sensor observations.
@@ -42,18 +40,11 @@ namespace ConFormSim.Sensors
             set { m_CompressionType = value; }
         }
 
-        private ScriptableNoiseFunction noiseFunc;
+        private ScriptableNoiseFunction m_noiseFunc;
 
-        public static Shader uberReplacementShader;
+        private FeatureVectorDefinition featureVectorDefinition;
 
-        /// <summary>
-        /// The requester object, that retrieves properties from observed
-        /// objects. It will be passed from the component to the constructor.
-        /// </summary>
-        ObjectPropertyRequester m_PropertyRequester;
-
-        Dictionary<int, GameObject> IDtoObjectDict = new Dictionary<int, GameObject>();
-        Dictionary<int, float[]> IDToFeatureVecDict = new Dictionary<int, float[]>();
+        public static Shader featureVecShader;
 
         /// <summary>
         /// Creates and returns the camera sensor.
@@ -65,33 +56,21 @@ namespace ConFormSim.Sensors
         /// <param name="name">The name of the camera sensor.</param>
         /// <param name="compression">The compression to apply to the generated image.</param>
         public ObjectPropertyCameraSensor(
-            Camera camera, int width, int height, bool grayscale, string name, 
-            FeatureVectorDefinition fvd, ScriptableNoiseFunction noiseFunc = null, 
-            RawImage image=null)
+            Camera camera, int width, int height, string name, 
+            FeatureVectorDefinition fvd, ScriptableNoiseFunction noiseFunc = null)
         {
             m_Camera = camera;
             m_Width = width;
             m_Height = height;
-            m_Grayscale = grayscale;
             m_Name = name;
-            m_PropertyRequester = new ObjectPropertyRequester(fvd);
             m_Shape = GenerateShape(width, height, fvd);
-            debugImg = image;
-            this.noiseFunc = noiseFunc;
+            m_defaultFeatureVector = fvd.GetDefaultFeatureVector();
+            this.m_noiseFunc = noiseFunc;
+            featureVectorDefinition = fvd;
 
-            if(!uberReplacementShader)
-                uberReplacementShader = Shader.Find("Hidden/UberReplacement");
+            if(!featureVecShader)
+                featureVecShader = Shader.Find("Hidden/FeatureVectorShader");
 
-            UpdateDictionaries();
-        }
-
-        private void UpdateDictionaries()
-        {
-            IDtoObjectDict.Clear();
-            foreach (ObjectPropertyProvider obj in Object.FindObjectsOfType<ObjectPropertyProvider>())
-            {
-                IDtoObjectDict[obj.gameObject.GetInstanceID()] = obj.gameObject;
-            }
         }
 
         /// <summary>
@@ -125,96 +104,47 @@ namespace ConFormSim.Sensors
         /// <summary>
         /// Writes out the generated, uncompressed image to the provided <see cref="WriteAdapter"/>.
         /// </summary>
-        /// <param name="adapter">Where the observation is written to.</param>
+        /// <param name="writer">Where the observation is written to.</param>
         /// <returns></returns>
-        public int Write(ObservationWriter adapter)
+        public int Write(ObservationWriter writer)
         {
-            var texture = ObservationToTexture(m_Camera, m_Width, m_Height);
-            texture.Apply();
-            texture.filterMode = FilterMode.Point;
-            Texture2D debugTex = new Texture2D(m_Width, m_Height, TextureFormat.RGBA32, false);
-            //debugImg.texture = texture;
-            float[,,] features = new float[m_Height, m_Width, m_PropertyRequester.FeatureVectorLength];
-            Color[] debugImgPixels = new Color[m_Height * m_Width];   
-
-            bool nonZero = false;
+            SetupObjectPropertyProviders();
+            int fvLength = featureVectorDefinition.GetFeatureVectorLength();
+            float[] propertyImage = ObservationToPropertyImage(
+                m_Camera, 
+                m_Width, 
+                m_Height,
+                fvLength);
             
-            // remove old feature vectors and fill new for this frame
-            IDToFeatureVecDict.Clear();
-            // for debug img we go through from bottom to top
-            for (int row = texture.height - 1; row >= 0; row--)
+            int index = 0;
+            int numLayer = (fvLength+3)/4;
+            
+            // invert rows due to texture format
+            for(int row = m_Width-1; row > -1; row--)
             {
-                // from left to right
-                for(int col = 0; col < texture.width; col++)
+                for(int col = 0; col < m_Height; col++)
                 {
-                    int id = ObjectIDColorEncoding.ColorToID(texture.GetPixel(col, row));
-                    // Debug.Log("Read Pixel with ID: "+ id);
-                    // check if we already have a vector for this id
-                    float[] featureVec;
-                    if (!IDToFeatureVecDict.TryGetValue(id, out featureVec))
+                    for (int layer = 0; layer < numLayer; layer++)
                     {
-                        // if there is no entry, we need to request it from the
-                        // object
-                        if(!IDtoObjectDict.ContainsKey(id) && id != 0)
+                        for(int depth = 0; depth < 4; depth++)
                         {
-                            UpdateDictionaries();
-                        }
-
-                        GameObject obj;
-                        if (IDtoObjectDict.TryGetValue(id, out obj))
-                        {
-                            featureVec = m_PropertyRequester.RequestProperties(obj);
-                        }
-                        else
-                        {
-                            featureVec = m_PropertyRequester.featureVectorDefinition.GetDefaultFeatureVector();
-                        }
-                        IDToFeatureVecDict.Add(id, featureVec);
-                    }  
-
-                    if (noiseFunc != null)
-                    {
-                        for(int i = 0; i < featureVec.Length; i++)
-                        {    
-                            featureVec[i] = noiseFunc.Apply(featureVec[i]);
-                            adapter[m_Height - row - 1, col, i] = featureVec[i];
+                            writer[index++] = propertyImage[depth + 4 * (col+ m_Width*(row + m_Height*layer))];
                         }
                     }
-                    else
-                    {
-                        adapter.AddRange(featureVec, col + row * m_Width);
-                    }
-
-                    if (featureLayer < featureVec.Length)
-                    {
-                        debugImgPixels[col + row * m_Width] = new Color(
-                            featureVec[(featureLayer) % featureVec.Length], 
-                            featureVec[(featureLayer) % featureVec.Length], 
-                            featureVec[(featureLayer) % featureVec.Length]);
-                        
-                        if (featureVec[featureLayer]!=0)
-                        {
-                            nonZero |= true;
-                        }
-                    }
-                    
                 }
             }
-            //Debug.Log("There are non zero Elements: " + nonZero);
-            if (debugImg != null)
-            {
-                debugTex.SetPixels(debugImgPixels);
-                debugTex.filterMode = FilterMode.Point;
-                debugTex.Apply();
-                debugImg.texture = debugTex; 
-            }
-
-            DestroyTexture(texture);
-            return m_Width * m_Height;
+            // for(int i = 0; i < fvLength; i++)
+            // {
+            //     writer.AddList();
+            // }
+            return propertyImage.Length;
         }
 
         /// <inheritdoc/>
-        public void Update() {}
+        public void Update() 
+        {
+            
+        }
 
         /// <inheritdoc/>
         public SensorCompressionType GetCompressionType()
@@ -223,41 +153,128 @@ namespace ConFormSim.Sensors
         }
 
         /// <summary>
-        /// Renders a Camera instance to a 2D texture at the corresponding resolution.
+        /// Finds the Object Property Provider Objects relevant to this sensor
+        /// and prepares them by setting the right properties.
         /// </summary>
-        /// <returns>The 2D texture.</returns>
-        /// <param name="obsCamera">Camera.</param>
-        /// <param name="width">Width of resulting 2D texture.</param>
-        /// <param name="height">Height of resulting 2D texture.</param>
-        /// <returns name="texture2D">Texture2D to render to.</returns>
-        public static Texture2D ObservationToTexture(Camera obsCamera, int width, int height)
+        private void SetupObjectPropertyProviders()
         {
-            var texture2D = new Texture2D(width, height, TextureFormat.RGBAFloat, false);
+            // retrieve all ObjectPropertyProvider objects registerd with the
+            // given feature vector
+            ObjectPropertyProvider[] opps = featureVectorDefinition.RegisteredOPPs;
+            
+            // save rect setting of the camera
+            Rect oldRect = m_Camera.rect;
+            m_Camera.rect = new Rect(0f, 0f, 1f, 1f);
+
+            // Find all opp that have a visible renderer attached to their game
+            // object or children of their game object
+            HashSet<Renderer> oppRenderers = new HashSet<Renderer>();
+            HashSet<ObjectPropertyProvider> initOpps = new HashSet<ObjectPropertyProvider>();
+            foreach(var opp in opps)
+            {
+                // only check relevant opps
+                if (opp.AvailableProperties != featureVectorDefinition)
+                {
+                    continue;
+                }
+                Transform oppTransform = opp.gameObject.transform;
+                Transform[] oppChildsTransform = new Transform[oppTransform.childCount + 1];
+                oppChildsTransform[0] = oppTransform;
+                for(int i = 1; i <= oppTransform.childCount; i++)
+                    oppChildsTransform[i] = oppTransform.GetChild(i-1);
+                foreach(Transform childTransform in oppChildsTransform)
+                {     
+                    // find the renderer of the child
+                    Renderer renderer;
+                    if (childTransform.gameObject.TryGetComponent<Renderer>(out renderer))
+                    {
+                        if (IsVisible(renderer, m_Camera))
+                        {
+                            // Prepare the object property provider to be rendered
+                            opp.SetFVRenderProperty();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // restore old camera setting
+            m_Camera.rect = oldRect;
+        }   
+
+        static bool IsVisible(Renderer renderer, Camera camera)
+        {
+            Plane[] planes = GeometryUtility.CalculateFrustumPlanes(camera);
+            return GeometryUtility.TestPlanesAABB(planes, renderer.bounds);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obsCamera"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="fvLength"></param>
+        /// <returns name="float[]"></returns>
+        public float[] ObservationToPropertyImage(Camera obsCamera, int width, int height, int fvLength)
+        {
+            // setup resulting property image array
+            float[] propertyImage = new float[width * height * (fvLength + 4 - fvLength % 4)];
+            
+            // save current camera settings
             var oldRec = obsCamera.rect;
+            var prevCameraRT = obsCamera.targetTexture;
+            var oldCameraClearFlags = obsCamera.clearFlags;
+            var oldCameraBackground = obsCamera.backgroundColor;
+            // save current active render texture
+            var prevActiveRT = RenderTexture.active;
+
+            // setup camera
             obsCamera.rect = new Rect(0f, 0f, 1f, 1f);
-            var depth = 24;
-            var format = RenderTextureFormat.ARGBFloat;
-            var readWrite = RenderTextureReadWrite.Linear;
+            obsCamera.clearFlags = CameraClearFlags.SolidColor;
+            obsCamera.backgroundColor = Color.black;
+            obsCamera.enabled = false;
+            // setup temporary render texture
+            var rtFormat = RenderTextureFormat.ARGBFloat;
+            var rtReadWrite = RenderTextureReadWrite.Linear;
+            var rtDepth = 24;
+            var tempRT =
+                RenderTexture.GetTemporary(width, height, rtDepth, rtFormat, rtReadWrite);
 
-            var tempRt =
-                RenderTexture.GetTemporary(width, height, depth, format, readWrite);
+            // setup texture to read the render result
+            var texture2D = new Texture2D(width, height, TextureFormat.RGBAFloat, false);
 
-            var prevActiveRt = RenderTexture.active;
-            var prevCameraRt = obsCamera.targetTexture;
+            // render to offscreen texture
+            RenderTexture.active = tempRT;
+            obsCamera.targetTexture = tempRT;
 
-            // render to offscreen texture (readonly from CPU side)
-            RenderTexture.active = tempRt;
-            obsCamera.targetTexture = tempRt;
+            // set default featureVector
+            float[] defaultFV = new float[fvLength + 4 - fvLength % 4];
+            m_defaultFeatureVector.CopyTo(defaultFV, 0);
+            // render multiple times, until all properties of the feature vector
+            // are read.
+            for (int i = 0; i < fvLength; i += 4)
+            {
+                obsCamera.backgroundColor = new Color(defaultFV[i], defaultFV[i + 1], defaultFV[i + 2], defaultFV[i + 3]);
+                Shader.SetGlobalInt("_StartIndex", i);
+                obsCamera.RenderWithShader(featureVecShader, "RenderType");
+                texture2D.ReadPixels(new Rect(0, 0, texture2D.width, texture2D.height), 0, 0);
+                texture2D.filterMode = FilterMode.Point;
+                var values = texture2D.GetRawTextureData<float>();
+                Unity.Collections.NativeArray<float>.Copy(values, 0, propertyImage, values.Length * i / 4, values.Length);
+            }
 
-            obsCamera.RenderWithShader(uberReplacementShader, "");
-
-            texture2D.ReadPixels(new Rect(0, 0, texture2D.width, texture2D.height), 0, 0);
-
-            obsCamera.targetTexture = prevCameraRt;
+            // reset all camera settings
+            obsCamera.targetTexture = prevCameraRT;
             obsCamera.rect = oldRec;
-            RenderTexture.active = prevActiveRt;
-            RenderTexture.ReleaseTemporary(tempRt);
-            return texture2D;
+            obsCamera.clearFlags = oldCameraClearFlags;
+            obsCamera.backgroundColor = oldCameraBackground;
+            obsCamera.enabled = true;
+            RenderTexture.active = prevActiveRT;
+            RenderTexture.ReleaseTemporary(tempRT);
+            DestroyTexture(texture2D);
+
+            return propertyImage;
         }
 
         /// <summary>
@@ -286,18 +303,8 @@ namespace ConFormSim.Sensors
             }
         }
 
-        public void SetFeatureLayer(int layer)
-        {
-            if (layer < m_PropertyRequester.featureVectorDefinition.GetFeatureVectorLength())
-            {
-                featureLayer = layer; 
-            }
-        }
-
         public void Reset()
         {
-            
         }
-
     }
 }

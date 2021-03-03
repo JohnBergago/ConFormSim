@@ -46,6 +46,72 @@ namespace ConFormSim.ObjectProperties
         [SerializeField, HideInInspector]
         private List<int> mapValues = new List<int>();
 
+        private int vectorLength = -1;
+        
+        public int VectorLength
+        {
+            get
+            {
+                if (vectorLength < 0)
+                {
+                    vectorLength = GetFeatureVectorLength();
+                }
+                return vectorLength;
+            }
+        }
+        
+
+        /// <summary>
+        /// The object property providers registered with this feature vector
+        /// definition.
+        /// </summary>
+        /// <typeparam name="ObjectPropertyProvider"></typeparam>
+        private HashSet<ObjectPropertyProvider> registeredOPPs= new HashSet<ObjectPropertyProvider>();
+
+        /// <summary>
+        /// Registers an object property provider on that feature vector
+        /// definition.
+        /// </summary>
+        /// <param name="opp">The object property provider to be
+        /// registered.</param>
+        public void RegisterOPP(ObjectPropertyProvider opp)
+        {
+            registeredOPPs.Add(opp);
+        }
+        
+        /// <summary>
+        /// Property to return an array of all currently registered object
+        /// property providers or adding new ones. It can be used to set
+        /// multiple property providers at once.
+        /// </summary>
+        /// <value>
+        /// Object property providers to be registered at this feature
+        /// vector.
+        /// </value>
+        public ObjectPropertyProvider[] RegisteredOPPs
+        {
+            get
+            {
+                return registeredOPPs.ToArray<ObjectPropertyProvider>();
+            } 
+            set
+            {
+                foreach(ObjectPropertyProvider opp in value)
+                {
+                    registeredOPPs.Add(opp);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes an object property provider from the set of registered OPPs.
+        /// </summary>
+        /// <param name="opp">The objectproperty provider to be removed.</param>
+        public void RemoveOPP(ObjectPropertyProvider opp)
+        {
+            registeredOPPs.Remove(opp);
+        }
+
         /// <summary>
         /// Adds a new Property setting to the properties dictionary or updates it.
         /// </summary>
@@ -61,18 +127,12 @@ namespace ConFormSim.ObjectProperties
         /// Get the order of the properties in the feature vector.
         /// </summary>
         /// <returns>Order of the properties.</returns>
-        public List<string> GetPropertyOrder()
+        public string[] GetPropertyOrder()
         {
-            List<string> keyOrder = new List<string>();
-            List<int> indexes = new List<int>();
+            string[] keyOrder = new string[keyIndexMap.Forward.Keys.Count()];
             foreach(KeyValuePair<string, int> element in keyIndexMap)
             {
-                indexes.Add(element.Value);
-            }
-            indexes.Sort();
-            foreach(int i in indexes)
-            {
-                keyOrder.Add(keyIndexMap.Reverse[i]);
+                keyOrder[element.Value] = element.Key;
             }
             return keyOrder;
         }
@@ -174,7 +234,7 @@ namespace ConFormSim.ObjectProperties
         /// Get the default feature vector according to the default settings.
         /// </summary>
         /// <returns>The default feature vector for this definition.</returns>
-        public float[] GetDefaultFeatureVector()
+        public List<float> GetDefaultFeatureVector()
         {
             List<float> result = new List<float>();
             foreach(string propertyName in GetPropertyOrder())
@@ -182,7 +242,12 @@ namespace ConFormSim.ObjectProperties
                 ObjectPropertySettings settings = Properties[propertyName];
                 result.AddRange(settings.GetDefaultFeatureVector());
             }
-            return result.ToArray();
+            return result;
+        }
+
+        void Awake()
+        {
+            vectorLength = -1;
         }
 
         void OnEnable()

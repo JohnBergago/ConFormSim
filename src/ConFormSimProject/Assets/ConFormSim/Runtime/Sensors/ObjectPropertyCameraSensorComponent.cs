@@ -67,19 +67,6 @@ namespace ConFormSim.Sensors
             set { m_Height = value;  }
         }
 
-        [HideInInspector, SerializeField] 
-        bool m_Grayscale;
-
-        /// <summary>
-        /// Whether to generate grayscale images or color.
-        /// Note that changing this after the sensor is created has no effect.
-        /// </summary>
-        public bool grayscale
-        {
-            get { return m_Grayscale;  }
-            set { m_Grayscale = value; }
-        }
-
         /// <summary>
         /// The feature vector, that will be requested for each object.
         /// </summary>
@@ -97,7 +84,7 @@ namespace ConFormSim.Sensors
         /// <returns>The created <see cref="ObjectPropertyCameraSensor"/> object for this component.</returns>
         public override ISensor CreateSensor()
         {
-            m_Sensor = new ObjectPropertyCameraSensor(m_Camera, m_Width, m_Height, grayscale, m_SensorName, featureVectorDefinition, noiseFunction, debugImg);
+            m_Sensor = new ObjectPropertyCameraSensor(m_Camera, m_Width, m_Height, m_SensorName, featureVectorDefinition, noiseFunction);
             return m_Sensor;
         }
 
@@ -126,7 +113,7 @@ namespace ConFormSim.Sensors
             if (Input.GetKeyDown(KeyCode.C))
             {
                 featureLayer = (featureLayer + 1) % featureVectorDefinition.GetFeatureVectorLength();
-                m_Sensor.SetFeatureLayer(featureLayer);
+                // m_Sensor.SetFeatureLayer(featureLayer);
             }
         }
 

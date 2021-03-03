@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using RotaryHeart.Lib.SerializableDictionary;
+using Unity.MLAgents;
 
 namespace ConFormSim.ObjectProperties
 {
@@ -64,6 +65,8 @@ namespace ConFormSim.ObjectProperties
         [SerializeField, HideInInspector]
         private StringNamedPropDict m_runtimePropertyDict = new StringNamedPropDict();
         
+        private int currentTotalStepCount;
+        private List<float> currentStepFeatureVector;
         public StringNamedPropDict PropertyDictionary
         {
             get
@@ -110,9 +113,6 @@ namespace ConFormSim.ObjectProperties
 
         void Awake()
         {
-            // set the object id as a property in the objects renderer
-            SetIDRenderProperty();
-            
             // so in case this object was copied, we need to create new Instances
             // for the runtime property dict. That way each object can keep it's own
             // values.
@@ -133,6 +133,20 @@ namespace ConFormSim.ObjectProperties
                 }
                 m_runtimePropertyDict = newDict;
             }
+        }
+
+        public void Start()
+        {
+            // register this object to the corresponding feature vector
+            // definition
+            availableProperties.RegisterOPP(this);
+        }
+
+        public void OnDestroy()
+        {
+            // when this provider is destroyed unregister from the feature
+            // vector definition.
+            availableProperties.RemoveOPP(this);
         }
 
         public void Reset()
@@ -157,16 +171,15 @@ namespace ConFormSim.ObjectProperties
         }
 
         /// <summary>
-        /// Sets the GameObject's Instance ID as a material property block in
+        /// Sets the Feature Vector as a material property block in
         /// attached renderers of the GameObjects and possible child objects, except
         /// they have a <see cref="ObjectPropertyProvider"/> attached to themselves.
         /// </summary>
-        private void SetIDRenderProperty()
+        public void SetFVRenderProperty()
         {
-            int id = gameObject.GetInstanceID();
             MaterialPropertyBlock mpb = new MaterialPropertyBlock();
-            mpb.SetColor("_ObjectColor", ObjectIDColorEncoding.IDToColor(id));
-            Debug.Log("Set Element with Color: "+ ObjectIDColorEncoding.IDToColor(id));
+            mpb.SetInt("_FeatureVectorLength", availableProperties.VectorLength);
+            mpb.SetFloatArray("_FeatureVector", GetFeatureVector());  
             // set for all objects in transform this id to be rendered for the
             // object property sensor
             Transform[] childs = new Transform[transform.childCount + 1];
@@ -188,6 +201,33 @@ namespace ConFormSim.ObjectProperties
                     }
                 }
             }
+        }
+
+        public List<float> GetFeatureVector()
+        {
+            // if the last time we updated the feature vector was in a past
+            // step, perform update
+            if(Academy.Instance.TotalStepCount != currentTotalStepCount)
+            {
+                List<float> fv = new List<float>();
+                foreach(string propertyName in availableProperties.GetPropertyOrder())
+                {
+                    ObjectProperty prop;
+                    if (TryGetObjectProperty(propertyName, out prop))
+                    {
+                        fv.AddRange(prop.GetFeatureVector());
+                        // Debug.Log("found prop: " + propertyName + " fv_length: " +  prop.arrayLength);
+                    }
+                    else
+                    {
+                        ObjectPropertySettings settings = availableProperties.Properties[propertyName];
+                        fv.AddRange(settings.GetDefaultFeatureVector());
+                        // Debug.Log("No prop: " + propertyName  + " fv_length: " +  settings.defaultValue.length);
+                    }
+                }
+                currentStepFeatureVector = fv;
+            }            
+            return currentStepFeatureVector;
         }
         
         /// <summary>

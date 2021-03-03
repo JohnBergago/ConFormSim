@@ -46,16 +46,14 @@ public class StorageAgent : Agent
     /// </summary>
     private bool activeAction = false;
 
-    private bool isReset = false;
-
     // Monitoring:
     private int m_StepCountTotal = 0;
     private int m_StepCountEpisode = 0;
     private int m_StepCountPrevEpisode = 0;
     private float m_RewardEpisode = 0;
     private float m_RewardPrevEpisode = 0;
-    private bool m_MonitorReset = false;
-
+    private int m_lastAction = 0;
+    
     public GameObject statsMonitor;
     private TextMeshProUGUI m_StepCountTotalText;
     private TextMeshProUGUI m_StepCountEpisodeText;
@@ -234,7 +232,7 @@ public class StorageAgent : Agent
                 {"interactable_gameobject", (object) interactableObj},
                 {"guide_transform", (object) handTransform}});
 
-        MonitorAction((int) vectorAction[0]);
+        m_lastAction = (int) vectorAction[0];
 
         GetComponent<RewardCollector>().UpdateReward();
 
@@ -244,7 +242,7 @@ public class StorageAgent : Agent
         {
             Debug.Log("step: " + this.StepCount + "\tID: " + GetInstanceID() + "\tReward: " + reward);
         }
-        MonitorUpdate();
+        
         if (GetComponent<RewardCollector>().isDone())
         {
             if(m_Academy.goalReachedMaterial)
@@ -257,6 +255,7 @@ public class StorageAgent : Agent
         {
             EndEpisode();
         }
+        m_StepCountTotal++;
     }
 
 
@@ -283,66 +282,70 @@ public class StorageAgent : Agent
         // for scripted ai  
         m_PathGrid = m_MyArea.GetPathGrid();
         m_PathGrid.UpdateGrid();
-        isReset = true;
 
         GetComponent<RewardCollector>().Reset();
     }
 
-    // On every Update check for reachable object in front of the agent
-    void FixedUpdate()
+    void Update()
     {
-        // basically here we just set up the crosshair to follow the detected object
-        // does the agent already carry any interactable?
-        if (handTransform.childCount > 0)
-        {
-            // check for non physics case
-            // set the cursor position on that object
-            if (cursorImage)
-            {
-                cursorImage.transform.localPosition = WorldToCanvasPosition(
-                    cursorImage.canvas, 
-                    cameraTransform.GetComponent<Camera>(), 
-                    handTransform.transform.GetChild(0).position);
-            }
-        }
-        else if (handTransform.GetComponent<FixedJoint>() != null)
-        {
-            if (cursorImage)
-            {
-                cursorImage.transform.localPosition = WorldToCanvasPosition(
-                    cursorImage.canvas, 
-                    cameraTransform.GetComponent<Camera>(), 
-                    handTransform.GetComponent<FixedJoint>()
-                        .connectedBody
-                        .gameObject
-                        .transform
-                        .position);
-            }
-        }
-        else
-        {
-            if (GetComponent<IObjectDetector>().HasObjectDetected)
-            {
-                if (cursorImage)
-                {
-                    cursorImage.gameObject.SetActive(true);
-                    cursorImage.transform.localPosition = WorldToCanvasPosition(
-                        cursorImage.canvas, 
-                        cameraTransform.GetComponent<Camera>(), 
-                        m_ObjectDetector.DetectedObject.transform.position);
-                    cursorImage.color = Color.green;
-                }
-            }
-            else
-            {
-                if(cursorImage)
-                {
-                    cursorImage.color = Color.white;
-                    cursorImage.gameObject.SetActive(false);
-                }
-            }
-        }
+        MonitorAction(m_lastAction);
+        MonitorUpdate();
     }
+    // On every Update check for reachable object in front of the agent
+    // void FixedUpdate()
+    // {
+    //     // basically here we just set up the crosshair to follow the detected object
+    //     // does the agent already carry any interactable?
+    //     if (handTransform.childCount > 0)
+    //     {
+    //         // check for non physics case
+    //         // set the cursor position on that object
+    //         if (cursorImage)
+    //         {
+    //             cursorImage.transform.localPosition = WorldToCanvasPosition(
+    //                 cursorImage.canvas, 
+    //                 cameraTransform.GetComponent<Camera>(), 
+    //                 handTransform.transform.GetChild(0).position);
+    //         }
+    //     }
+    //     else if (handTransform.GetComponent<FixedJoint>() != null)
+    //     {
+    //         if (cursorImage)
+    //         {
+    //             cursorImage.transform.localPosition = WorldToCanvasPosition(
+    //                 cursorImage.canvas, 
+    //                 cameraTransform.GetComponent<Camera>(), 
+    //                 handTransform.GetComponent<FixedJoint>()
+    //                     .connectedBody
+    //                     .gameObject
+    //                     .transform
+    //                     .position);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         if (GetComponent<IObjectDetector>().HasObjectDetected)
+    //         {
+    //             if (cursorImage)
+    //             {
+    //                 cursorImage.gameObject.SetActive(true);
+    //                 cursorImage.transform.localPosition = WorldToCanvasPosition(
+    //                     cursorImage.canvas, 
+    //                     cameraTransform.GetComponent<Camera>(), 
+    //                     m_ObjectDetector.DetectedObject.transform.position);
+    //                 cursorImage.color = Color.green;
+    //             }
+    //         }
+    //         else
+    //         {
+    //             if(cursorImage)
+    //             {
+    //                 cursorImage.color = Color.white;
+    //                 cursorImage.gameObject.SetActive(false);
+    //             }
+    //         }
+    //     }
+    // }
     
     /// <summary> 
     /// Calculates a position on the canvas based on a position in world coordinates.
@@ -462,7 +465,6 @@ public class StorageAgent : Agent
         }
         else
         {
-            m_StepCountTotal++;
             m_StepCountEpisode = this.StepCount;
             m_RewardEpisode = GetCumulativeReward();
 

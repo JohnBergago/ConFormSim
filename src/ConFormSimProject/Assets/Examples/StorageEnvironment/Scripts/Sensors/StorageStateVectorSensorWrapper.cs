@@ -15,11 +15,8 @@ public class StorageStateVectorSensorWrapper : ISensor
     GameObject m_Agent;
 
     VectorSensor m_VectorSensor;
-
-    ObjectPropertyRequester propertyRequester;
     int m_NumPropertiesPerObject;
-    int maxLengthPropItems = 0;
-    int maxLengthPropBases = 0;
+    FeatureVectorDefinition m_FeatureVectorDefinition;
 
     /// <summary>
     /// For each target tag there is one index in the one hot vector.
@@ -49,7 +46,8 @@ public class StorageStateVectorSensorWrapper : ISensor
         m_Academy = academy;
         m_Area = area;
         m_Agent = agent;
-        propertyRequester = new ObjectPropertyRequester(featureVectorDefinition);
+        m_FeatureVectorDefinition = featureVectorDefinition;
+
 
         int maxNumItems = academy.itemSettings.itemTypesToUse 
             * academy.itemSettings.numberPerItemType;
@@ -63,8 +61,8 @@ public class StorageStateVectorSensorWrapper : ISensor
         int observationSize =
             // Agent position (x, z, rot)  
             3       
-            + maxNumItems * (2 + propertyRequester.FeatureVectorLength)
-            + maxNumBases * (2 + propertyRequester.FeatureVectorLength);
+            + maxNumItems * (2 + featureVectorDefinition.VectorLength)
+            + maxNumBases * (2 + featureVectorDefinition.VectorLength);
         Debug.Log("Observation Size: " + observationSize);
         m_VectorSensor = new VectorSensor(observationSize, name);
     }
@@ -133,13 +131,14 @@ public class StorageStateVectorSensorWrapper : ISensor
                     (itemPosRel.z + gridMaxZ) / gridMaxZ - 1 );
                 // Debug.Log(((itemPosRel.x + gridMaxX) / gridMaxX - 1 ) + ", " + ((itemPosRel.z + gridMaxZ) / gridMaxZ - 1 ));
 
-                // request properties from properties requester
-                m_VectorSensor.AddObservation(propertyRequester.RequestProperties(item)); 
+                // request featurevector
+                m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(item));
+            
             }
             else 
             {
                 // Debug.Log("Empty Item");
-                for (int j = 0; j < 2 + propertyRequester.FeatureVectorLength; j++)
+                for (int j = 0; j < 2 + m_FeatureVectorDefinition.VectorLength; j++)
                 {
                     m_VectorSensor.AddObservation(-1.0f);
                     // Debug.Log(-1.0f);
@@ -167,17 +166,31 @@ public class StorageStateVectorSensorWrapper : ISensor
 
                 // Debug.Log(((basePosRel.x + gridMaxX) / gridMaxX - 1 ) + ", " + ((basePosRel.z + gridMaxZ) / gridMaxZ - 1 ));
                 
-                m_VectorSensor.AddObservation(propertyRequester.RequestProperties(baseObj)); 
+                m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(baseObj)); 
             }
             else 
             {
                 // Debug.Log("Empty Base");
-                for (int j = 0; j < 2 + maxLengthPropBases; j++)
+                for (int j = 0; j < 2 + m_FeatureVectorDefinition.VectorLength; j++)
                 {
                     m_VectorSensor.AddObservation(-1.0f);
                 //    Debug.Log(-1.0f);
                 }
             }
+        }
+    }
+
+    List<float> RequestFeatureVectorFromObject(GameObject gameObject)
+    {
+        // request featurevector
+        ObjectPropertyProvider objectPropertyProvider;
+        if (gameObject.TryGetComponent<ObjectPropertyProvider>(out objectPropertyProvider))
+        {
+            return objectPropertyProvider.GetFeatureVector();
+        }
+        else
+        {
+            return m_FeatureVectorDefinition.GetDefaultFeatureVector();
         }
     }
 
