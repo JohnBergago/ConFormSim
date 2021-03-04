@@ -209,7 +209,7 @@ namespace ConFormSim.ObjectProperties
             // step, perform update
             if(Academy.Instance.TotalStepCount != currentTotalStepCount)
             {
-                List<float> fv = new List<float>();
+                List<float> fv = new List<float>(availableProperties.VectorLength);
                 foreach(string propertyName in availableProperties.GetPropertyOrder())
                 {
                     ObjectProperty prop;

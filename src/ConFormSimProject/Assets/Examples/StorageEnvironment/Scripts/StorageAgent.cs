@@ -28,15 +28,32 @@ public class StorageAgent : Agent
     [SerializeField] private Transform cameraTransform = null;
     [SerializeField] private Image cursorImage = null;
     public GameObject toolIndicator = null;
+    /// <summary>
+    /// The transform to which interactable objects can be attached.
+    /// </summary>
     public Transform handTransform = null;
+    /// <summary>
+    /// The fixed joint of the hand transform, which is relevant in a physics
+    /// world. (Automatically retrieved on Start())
+    /// </summary>
+    private FixedJoint handTransformJoint = null;
 
     /// <summary>
     /// The ObjectDetector component that checks for objects to interact
     /// with. This has to be attached to the agent.
     /// </summary>
     private IObjectDetector m_ObjectDetector;
+    
+    /// <summary>
+    /// The reward collector used to assign rewards to this agent. Is called
+    /// OnActionReceived().
+    /// </summary>
+    private RewardCollector rewardCollector;
 
-    // tags for objects with which the agent will collide with
+    /// <summary>
+    /// The agent collides with objects of these tags.
+    /// </summary>
+    /// <value></value>
     public List<string> collisionTags = new List<string> {"wall"};
     public ScriptableNoiseFunction objectPropertyNoiseFunc;
 
@@ -53,14 +70,12 @@ public class StorageAgent : Agent
     private float m_RewardEpisode = 0;
     private float m_RewardPrevEpisode = 0;
     private int m_lastAction = 0;
-    
+    private float heuristicActionInput = 0;
+    /// <summary>
+    /// The monitor objects to display all the statistics UI.
+    /// </summary>
     public GameObject statsMonitor;
-    private TextMeshProUGUI m_StepCountTotalText;
-    private TextMeshProUGUI m_StepCountEpisodeText;
-    private TextMeshProUGUI m_StepCountPrevEpisodeText;
-    private TextMeshProUGUI m_RewardEpisodeText;
-    private TextMeshProUGUI m_RewardPrevEpisodeText;
-    private TextMeshProUGUI m_MonitorActionText;
+    private TextMeshProUGUI m_AgentStats;
 
 
     private AgentActionProvider aActionProvider;
@@ -78,6 +93,17 @@ public class StorageAgent : Agent
         m_ObjectDetector = GetComponent<IObjectDetector>();
 
         aActionProvider = GetComponent<AgentActionProvider>();
+
+        // init members
+        if(handTransform != null)
+        {
+            handTransformJoint = handTransform.GetComponent<FixedJoint>();
+        }
+        else
+        {
+            Debug.LogError("No hand transform assigned to agent!.");
+        }
+        rewardCollector = GetComponent<RewardCollector>();
        
         // Init camera sensors if needed
         var resetProperties = m_Academy.envPropertiesChannel;
@@ -145,7 +171,7 @@ public class StorageAgent : Agent
             rpsc3d.DetectableTags.AddRange(m_Academy.baseTags);
         }
 
-        RawImage debugImg = m_MyArea.transform.FindDeepChild("RawImage").gameObject.GetComponent<UnityEngine.UI.RawImage>();
+        RawImage debugImg = m_MyArea.transform.FindDeepChild("ObjectPropertyImage").gameObject.GetComponent<UnityEngine.UI.RawImage>();
         debugImg.enabled = false;
         if(m_Academy.useObjectPropertyCamera)
         {
@@ -214,10 +240,10 @@ public class StorageAgent : Agent
             // check non physics transform
             interactableObj = handTransform.GetChild(0).gameObject;
         }
-        else if (handTransform.GetComponent<FixedJoint>() != null)
+        else if (handTransformJoint != null)
         {
             // check physical indicator of carrying things
-            interactableObj = handTransform.GetComponent<FixedJoint>().connectedBody.gameObject;
+            interactableObj = handTransformJoint.connectedBody.gameObject;
         }
         else
         {
@@ -234,16 +260,16 @@ public class StorageAgent : Agent
 
         m_lastAction = (int) vectorAction[0];
 
-        GetComponent<RewardCollector>().UpdateReward();
+        rewardCollector.UpdateReward();
 
-        float reward = GetComponent<RewardCollector>().GetReward();
+        float reward = rewardCollector.GetReward();
         SetReward(reward);
         if(Mathf.Abs(reward) > 0.01f)
         {
             Debug.Log("step: " + this.StepCount + "\tID: " + GetInstanceID() + "\tReward: " + reward);
         }
         
-        if (GetComponent<RewardCollector>().isDone())
+        if (rewardCollector.isDone())
         {
             if(m_Academy.goalReachedMaterial)
             {
@@ -288,7 +314,40 @@ public class StorageAgent : Agent
 
     void Update()
     {
-        MonitorAction(m_lastAction);
+        // get Input for heuristics
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Go Fwd");
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Go Bwd");
+        }
+        else if (Input.GetKeyDown(KeyCode.A))
+        {
+            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Go Left");
+        }
+        else if (Input.GetKeyDown(KeyCode.D))
+        {
+            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Go Right");
+        }
+        else if (Input.GetKeyDown(KeyCode.Q))
+        {
+            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Rotate Left");
+        }
+        else if (Input.GetKeyDown(KeyCode.E))
+        {
+            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Rotate Right");
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Interact");
+        }
+        else if (Input.GetKeyDown(KeyCode.Space))
+        {
+            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Pick Up");
+        }
+        // Update UI
         MonitorUpdate();
     }
     // On every Update check for reachable object in front of the agent
@@ -391,75 +450,17 @@ public class StorageAgent : Agent
     private int m_lastKeyPress;
     public override void Heuristic(float[] actionsOut)
     {        
-        // only do one action per frame when user controlled  
-        if (Time.frameCount != m_lastKeyPress)
-        {
-            m_lastKeyPress = Time.frameCount;
-
-            if (Input.GetKeyDown(KeyCode.W))
-            {
-                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Fwd");
-            }
-            else if (Input.GetKeyDown(KeyCode.S))
-            {
-                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Bwd");
-            }
-            else if (Input.GetKeyDown(KeyCode.A))
-            {
-                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Left");
-            }
-            else if (Input.GetKeyDown(KeyCode.D))
-            {
-                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Go Right");
-            }
-            else if (Input.GetKeyDown(KeyCode.Q))
-            {
-                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Rotate Left");
-                
-            }
-            else if (Input.GetKeyDown(KeyCode.E))
-            {
-                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Rotate Right");
-            }
-            else if (Input.GetKeyDown(KeyCode.LeftShift))
-            {
-                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Interact");
-            }
-            else if (Input.GetKeyDown(KeyCode.Space))
-            {
-                actionsOut[0] = aActionProvider.GetActionIDByName(0, "Pick Up");
-            }
-            else
-            {
-                actionsOut[0] = aActionProvider.GetActionIDByName(0, "No Action");
-            }
-        }  
-        else
-        {
-            // No Action if the frame has'nt changed yet
-            actionsOut[0] = aActionProvider.GetActionIDByName(0, "No Action");
-        }
-        
+        actionsOut[0] = heuristicActionInput;
+        heuristicActionInput = aActionProvider.GetActionIDByName(0, "No Action");
     }
-
-    private void MonitorAction(int action)
-    {
-        m_MonitorActionText.text = "Action: " + 
-            GetComponent<AgentActionProvider>().GetActionName(0, action);
-    }
-
 
     private void MonitorUpdate()
     {
         // was there a reset?
         if(m_StepCountEpisode > this.StepCount)
         {
-            Debug.Log("Monitor Reset");
             m_RewardPrevEpisode = GetComponent<RewardCollector>().GetPrevReward();
             m_StepCountPrevEpisode = m_StepCountEpisode;
-            m_RewardPrevEpisodeText.text = "Prev. Eps. Reward: " + m_RewardPrevEpisode.ToString("N4");
-            m_StepCountPrevEpisodeText.text = "Prev. Eps. Steps: " + m_StepCountPrevEpisode;
-
             m_RewardEpisode = 0;
             m_StepCountEpisode = this.StepCount;
         }
@@ -467,11 +468,15 @@ public class StorageAgent : Agent
         {
             m_StepCountEpisode = this.StepCount;
             m_RewardEpisode = GetCumulativeReward();
-
-            m_StepCountEpisodeText.text = "Eps. Steps: " + m_StepCountEpisode;
-            m_RewardEpisodeText.text = "Eps. Reward: " + m_RewardEpisode.ToString("N4");
-            m_StepCountTotalText.text = "Tot. Agent Steps: " + m_StepCountTotal;
         }        
+
+        m_AgentStats.text = 
+            "Tot. Agent Steps: " + m_StepCountTotal + "\n\n"
+            + "Action: " + GetComponent<AgentActionProvider>().GetActionName(0, m_lastAction) + "\n"
+            + "Eps. Steps: " + m_StepCountEpisode + "\n"
+            + "Eps. Reward: " +  m_RewardEpisode.ToString("N4") + "\n\n"
+            + "Prev. Eps. Steps: " + m_StepCountPrevEpisode + "\n"
+            + "Prev. Eps. Reward: " + m_RewardPrevEpisode.ToString("N4") + "\n";
     }
 
     private void InitMonitoring()
@@ -486,62 +491,17 @@ public class StorageAgent : Agent
             }
         }
 
-        GameObject[] rewardTexts = GameObject.FindGameObjectsWithTag("monitorReward");
-        foreach(GameObject rewardText in rewardTexts)
+        GameObject[] agentStats = GameObject.FindGameObjectsWithTag("monitorAgentStats");
+        Debug.Log("AgentStatsLength: " + agentStats.Length);
+        foreach(GameObject agentStat in agentStats)
         {
-            if (rewardText.transform.parent.parent == area.transform)
+            if (agentStat.transform.parent.parent == area.transform)
             {
-                m_RewardEpisodeText = rewardText.GetComponent<TextMeshProUGUI>();
-                break;
-            }
-        }
-        GameObject[] stepsEpsTexts = GameObject.FindGameObjectsWithTag("monitorStepsEpisode");
-        foreach(GameObject stepsEpsText in stepsEpsTexts)
-        {
-            if (stepsEpsText.transform.parent.parent == area.transform)
-            {
-                m_StepCountEpisodeText = stepsEpsText.GetComponent<TextMeshProUGUI>();
-                break;
-            }
-        }
-         GameObject[] prevRewardTexts = GameObject.FindGameObjectsWithTag("monitorRewardPrevEpisode");
-        foreach(GameObject prevRewardText in prevRewardTexts)
-        {
-            if (prevRewardText.transform.parent.parent == area.transform)
-            {
-                m_RewardPrevEpisodeText = prevRewardText.GetComponent<TextMeshProUGUI>();
-                break;
-            }
-        }
-        GameObject[] stepsPrevEpsTexts = GameObject.FindGameObjectsWithTag("monitorStepsPrevEpisode");
-        foreach(GameObject stepsPrevEpsText in stepsPrevEpsTexts)
-        {
-            if (stepsPrevEpsText.transform.parent.parent == area.transform)
-            {
-                m_StepCountPrevEpisodeText = stepsPrevEpsText.GetComponent<TextMeshProUGUI>();
+                m_AgentStats = agentStat.GetComponent<TextMeshProUGUI>();
                 break;
             }
         }
 
-        GameObject[] stepsTotalTexts = GameObject.FindGameObjectsWithTag("monitorStepsTotal");
-        foreach(GameObject stepsTotalText in stepsTotalTexts)
-        {
-            if (stepsTotalText.transform.parent.parent == area.transform)
-            {
-                m_StepCountTotalText = stepsTotalText.GetComponent<TextMeshProUGUI>();
-                break;
-            }
-        }
-
-        GameObject[] actionTexts = GameObject.FindGameObjectsWithTag("monitorAction");
-        foreach(GameObject actionText in actionTexts)
-        {
-            if (actionText.transform.parent.parent == area.transform)
-            {
-                m_MonitorActionText = actionText.GetComponent<TextMeshProUGUI>();
-                break;
-            }
-        }
         // deactivate stats monitor until academy enables it
         statsMonitor.SetActive(false);
     }

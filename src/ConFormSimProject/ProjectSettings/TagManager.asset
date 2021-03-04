@@ -8,17 +8,12 @@ TagManager:
   - base
   - agent
   - monitor
-  - monitorStepsPrevEpisode
   - wall
-  - monitorStepsEpisode
-  - monitorAction
-  - monitorReward
-  - monitorRewardPrevEpisode
-  - monitorStepsTotal
   - Interactable
   - Gem
   - locked
   - unlocked
+  - monitorAgentStats
   layers:
   - Default
   - TransparentFX

@@ -24,6 +24,9 @@ public class BoxworldAgent : Agent
     private int m_PrevEpsSteps;
     private float m_PrevEpsReward;
 
+    // current action for heuristic
+    private float m_CurrentAction = 0;
+
     public override void Initialize()
     {
         m_AgentActionProvider = GetComponent<AgentActionProvider>();
@@ -68,8 +71,6 @@ public class BoxworldAgent : Agent
             Debug.Log("step: " + this.StepCount + "\tID: " + GetInstanceID() + "\tReward: " + reward);
         }
 
-        UpdateAgentStats();
-
         if (m_RewardCollector.isDone())
         {
             EndEpisode();
@@ -86,34 +87,8 @@ public class BoxworldAgent : Agent
     private int m_lastKeyPress;
     public override void Heuristic(float[] actionsOut)
     {            
-        if (m_lastKeyPress != Time.frameCount)
-        {
-            m_lastKeyPress = Time.frameCount;
-            if (Input.GetKeyDown(KeyCode.W))
-            {
-                actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Fwd");
-            }
-            else if (Input.GetKeyDown(KeyCode.S))
-            {
-                actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Bwd");
-            }
-            else if (Input.GetKeyDown(KeyCode.A))
-            {
-                actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Left");
-            }
-            else if (Input.GetKeyDown(KeyCode.D))
-            {
-                actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "Go Right");
-            }
-            else
-            {
-                actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "No Action");
-            }
-        }
-        else
-        {
-            actionsOut[0] = m_AgentActionProvider.GetActionIDByName(0, "No Action");
-        }
+        actionsOut[0] = m_CurrentAction;
+        m_CurrentAction = m_AgentActionProvider.GetActionIDByName(0, "No Action");
     }
 
     private void UpdateAgentStats()
@@ -137,5 +112,28 @@ public class BoxworldAgent : Agent
             + "\nReward: " + m_RewardEpisode.ToString("N2")
             + "\n\nPrev. Eps. Steps: " + m_PrevEpsSteps
             + "\nPrev. Eps. Reward: " + m_PrevEpsReward.ToString("N2");
+    }
+
+    void Update()
+    {
+        UpdateAgentStats();
+
+
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            m_CurrentAction = m_AgentActionProvider.GetActionIDByName(0, "Go Fwd");
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            m_CurrentAction = m_AgentActionProvider.GetActionIDByName(0, "Go Bwd");
+        }
+        else if (Input.GetKeyDown(KeyCode.A))
+        {
+            m_CurrentAction = m_AgentActionProvider.GetActionIDByName(0, "Go Left");
+        }
+        else if (Input.GetKeyDown(KeyCode.D))
+        {
+            m_CurrentAction = m_AgentActionProvider.GetActionIDByName(0, "Go Right");
+        }
     }
 }

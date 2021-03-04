@@ -46,8 +46,15 @@ namespace ConFormSim.ObjectProperties
         [SerializeField, HideInInspector]
         private List<int> mapValues = new List<int>();
 
+        /// <summary>
+        /// Length of the resulting feature vector from this definition.
+        /// </summary>
         private int vectorLength = -1;
         
+        /// <summary>
+        /// Get length of feature vector resulting from this definition.
+        /// </summary>
+        /// <value></value>
         public int VectorLength
         {
             get
@@ -220,7 +227,7 @@ namespace ConFormSim.ObjectProperties
         /// Calculates the total length of the feature vector
         /// </summary>
         /// <returns>Length of the feature vector.</returns>
-        public int GetFeatureVectorLength()
+        private int GetFeatureVectorLength()
         {
             int length = 0;
             foreach(KeyValuePair<string, ObjectPropertySettings> element in properties)

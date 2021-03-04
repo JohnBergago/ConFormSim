@@ -112,8 +112,11 @@ namespace ConFormSim.Sensors
         {
             if (Input.GetKeyDown(KeyCode.C))
             {
-                featureLayer = (featureLayer + 1) % featureVectorDefinition.GetFeatureVectorLength();
-                // m_Sensor.SetFeatureLayer(featureLayer);
+                featureLayer = (featureLayer + 1) % featureVectorDefinition.VectorLength;
+            }
+            if (debugImg != null)
+            {
+                m_Sensor.SetDebugImage(debugImg, featureLayer);
             }
         }
 
