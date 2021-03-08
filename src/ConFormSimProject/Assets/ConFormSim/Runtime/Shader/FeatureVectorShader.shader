@@ -9,11 +9,19 @@
     float _FeatureVector[_MAX_VECTOR_LENGTH];
     // The real length of the feature vector
     int _FeatureVectorLength = 0;
+    // The Instance ID of the feature vector definition, corresponding to the
+    // feature vector. If _FVDefinitionID and _CurrentFVDefinitionID mismatch,
+    // the default vector is rendered.
+    int _FVDefinitionID = 0;
     // The default feature vector to read from, if there is no feature
     // vector defined. This applies if _FeatureVectorLength <= 0
     float _DefaultFeatureVector[_MAX_VECTOR_LENGTH];
     // The position in the feature vector to start reading from. 
     int _StartIndex = 0;
+    // The instance id of the feature vector definition, which is currently
+    // rendered. If _FVDefinitionID and _CurrentFVDefinitionID mismatch, the
+    // default vector is rendered.
+    int _CurrentFVDefinitionID = 0;
 
     float4 blockFromVec(float vec[_MAX_VECTOR_LENGTH], int index)
     {
@@ -40,15 +48,16 @@
 
     float4 Output()
     {
-        // If the feature vector is supposed to be bigger than the 
-        // _Max_Vector_Length cap it to the max allowed length.
-        if (_FeatureVectorLength > _MAX_VECTOR_LENGTH)
-        {
-            _FeatureVectorLength = _MAX_VECTOR_LENGTH;
-        }
-        else if (_FeatureVectorLength <= 0)
+        // If the feature vector definitions IDs mismatch, render default vector
+        if (_FVDefinitionID != _CurrentFVDefinitionID || _FeatureVectorLength <= 0)
         {
             return blockFromVec(_DefaultFeatureVector, _StartIndex);
+        }
+        // Else if the feature vector is supposed to be bigger than the 
+        // _Max_Vector_Length cap it to the max allowed length.
+        else if (_FeatureVectorLength > _MAX_VECTOR_LENGTH)
+        {
+            _FeatureVectorLength = _MAX_VECTOR_LENGTH;
         }
         
         return blockFromVec(_FeatureVector, _StartIndex);

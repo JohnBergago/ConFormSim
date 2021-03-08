@@ -287,7 +287,6 @@ MonoBehaviour:
   featureLayer: 0
   m_Width: 84
   m_Height: 84
-  m_Grayscale: 0
   featureVectorDefinition: {fileID: 11400000, guid: b4c63f2021abbfa918b04dd1a65f3e08,
     type: 2}
   noiseFunction: {fileID: 0}

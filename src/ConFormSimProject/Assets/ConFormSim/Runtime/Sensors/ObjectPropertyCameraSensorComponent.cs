@@ -70,6 +70,7 @@ namespace ConFormSim.Sensors
         /// <summary>
         /// The feature vector, that will be requested for each object.
         /// </summary>
+        [HideInInspector, SerializeField] 
         public FeatureVectorDefinition featureVectorDefinition;
 
         /// <summary>

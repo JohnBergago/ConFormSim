@@ -66,6 +66,11 @@ namespace ConFormSim.ObjectProperties
                 return vectorLength;
             }
         }
+
+        /// <summary>
+        /// Default feature vector of this feature vector defintion.
+        /// </summary>
+        private List<float> defaultFeatureVector;
         
 
         /// <summary>
@@ -243,13 +248,23 @@ namespace ConFormSim.ObjectProperties
         /// <returns>The default feature vector for this definition.</returns>
         public List<float> GetDefaultFeatureVector()
         {
-            List<float> result = new List<float>();
-            foreach(string propertyName in GetPropertyOrder())
+            if(defaultFeatureVector == null || defaultFeatureVector.Count == 0)
             {
-                ObjectPropertySettings settings = Properties[propertyName];
-                result.AddRange(settings.GetDefaultFeatureVector());
+                defaultFeatureVector = new List<float>();
+
+                foreach(string propertyName in GetPropertyOrder())
+                {
+                    ObjectPropertySettings settings = Properties[propertyName];
+                    defaultFeatureVector.AddRange(settings.GetDefaultFeatureVector());
+                }
+                string defaultVecString = "";
+                foreach(float value in defaultFeatureVector)
+                {
+                    defaultVecString += value + ", ";
+                }
+                Debug.Log(defaultVecString);
             }
-            return result;
+            return defaultFeatureVector;
         }
 
         void Awake()

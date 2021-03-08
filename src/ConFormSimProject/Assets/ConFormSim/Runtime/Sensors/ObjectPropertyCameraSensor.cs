@@ -20,7 +20,7 @@ namespace ConFormSim.Sensors
         /// The default feature vector for all pixels that are not covered by
         /// objects with poperty providers.
         /// </summary>
-        private List<float> m_defaultFeatureVector;
+        private float[] m_defaultFeatureVector = new float[256];
 
         /// <summary>
         /// The Camera used for rendering the sensor observations.
@@ -64,7 +64,7 @@ namespace ConFormSim.Sensors
             m_Height = height;
             m_Name = name;
             m_Shape = GenerateShape(width, height, fvd);
-            m_defaultFeatureVector = fvd.GetDefaultFeatureVector();
+            fvd.GetDefaultFeatureVector().CopyTo(m_defaultFeatureVector, 0);
             this.m_noiseFunc = noiseFunc;
             featureVectorDefinition = fvd;
             int fvLength = fvd.VectorLength;
@@ -200,11 +200,6 @@ namespace ConFormSim.Sensors
             HashSet<ObjectPropertyProvider> initOpps = new HashSet<ObjectPropertyProvider>();
             for(int i = 0; i < opps.Length; i++)
             {
-                // only check relevant opps
-                if (opps[i].AvailableProperties != featureVectorDefinition)
-                {
-                    continue;
-                }
                 opps[i].SetFVRenderProperty();
             }
         }   
@@ -250,13 +245,18 @@ namespace ConFormSim.Sensors
             m_Camera.targetTexture = tempRT;
 
             // set default featureVector
-            float[] defaultFV = new float[fvLength + 4 - fvLength % 4];
-            m_defaultFeatureVector.CopyTo(defaultFV, 0);
+            // float[] defaultFV = new float[fvLength + 4 - fvLength % 4];
+            Shader.SetGlobalFloatArray("_DefaultFeatureVector", m_defaultFeatureVector);
+            Shader.SetGlobalInt("_CurrentFVDefinitionID", featureVectorDefinition.GetInstanceID());
             // render multiple times, until all properties of the feature vector
             // are read.
             for (int i = 0; i < fvLength; i += 4)
             {
-                m_Camera.backgroundColor = new Color(defaultFV[i], defaultFV[i + 1], defaultFV[i + 2], defaultFV[i + 3]);
+                m_Camera.backgroundColor = new Color(
+                    m_defaultFeatureVector[i], 
+                    m_defaultFeatureVector[i + 1], 
+                    m_defaultFeatureVector[i + 2], 
+                    m_defaultFeatureVector[i + 3]);
                 Shader.SetGlobalInt("_StartIndex", i);
                 m_Camera.RenderWithShader(featureVecShader, "RenderType");
                 texture2D.ReadPixels(new Rect(0, 0, texture2D.width, texture2D.height), 0, 0);

@@ -47,6 +47,23 @@ namespace ConFormSim.ObjectProperties
         }
         
         /// <summary>
+        /// The ObjectPropertyCamera calls <see cref="SetFVRenderProperty"/>
+        /// with every sensor step in order to update all render materials
+        /// belonging to this property provider. If the number of child objects
+        /// with renderers changes in between steps, enable this flag. Otherwise
+        /// disable it to improve performance. 
+        /// </summary>
+        public bool updateChildRenderers = false;
+
+        /// <summary>
+        /// All renderers belonging to this object property provider. The list
+        /// will be filled on Start(). If the number of renderers (child objects
+        /// of the object property provider gameobject) changes during runtime,
+        /// enable <see cref="updateChildRenderers"/>.
+        /// </summary>
+        private List<Renderer> oppRenderers = new List<Renderer>();
+
+        /// <summary>
         /// This List will be used to display the object properties in the Unity
         /// Inspector. 
         /// </summary>
@@ -140,6 +157,7 @@ namespace ConFormSim.ObjectProperties
             // register this object to the corresponding feature vector
             // definition
             availableProperties.RegisterOPP(this);
+            GetChildRenderers();
         }
 
         public void OnDestroy()
@@ -180,16 +198,32 @@ namespace ConFormSim.ObjectProperties
             MaterialPropertyBlock mpb = new MaterialPropertyBlock();
             mpb.SetInt("_FeatureVectorLength", availableProperties.VectorLength);
             mpb.SetFloatArray("_FeatureVector", GetFeatureVector());  
-            // set for all objects in transform this id to be rendered for the
-            // object property sensor
+            mpb.SetInt("_FVDefinitionID", availableProperties.GetInstanceID());
+
+
+            // set material property block for all renders belonging to this
+            // object property provider
+            if(updateChildRenderers)
+            {
+                GetChildRenderers();
+            }
+            for(int i = 0; i < oppRenderers.Count; i++)
+            {
+                oppRenderers[i].SetPropertyBlock(mpb);
+            }
+        }
+
+        void GetChildRenderers()
+        {
+            oppRenderers.Clear();
             Transform[] childs = new Transform[transform.childCount + 1];
             childs[0] = transform;
             for(int i = 1; i <= transform.childCount; i++)
                 childs[i] = transform.GetChild(i-1);
             foreach(Transform child in childs)
             {     
-                // if a child has an object property provider itself, don't change
-                // its rendered ID
+                // if a child has an object property provider itself, don't add
+                // it to the list
                 ObjectPropertyProvider opp;
                 if (!child.gameObject.TryGetComponent<ObjectPropertyProvider>(out opp) || child == transform)
                 {
@@ -197,7 +231,7 @@ namespace ConFormSim.ObjectProperties
                     Renderer renderer;
                     if (child.gameObject.TryGetComponent<Renderer>(out renderer))
                     {
-                        renderer.SetPropertyBlock(mpb);
+                        oppRenderers.Add(renderer);
                     }
                 }
             }

@@ -25,7 +25,6 @@ namespace ConFormSim.ObjectProperties
         public ObjectProperty defaultValue;
 
         private float[] defaultFeatureVector;
-        private bool isPlaying;
 
         /// <summary>
         /// The number of values a list type can contain. This will usually have no
@@ -77,7 +76,7 @@ namespace ConFormSim.ObjectProperties
         /// <returns>Feature vector filled with default values.</returns>
         public float[] GetDefaultFeatureVector()
         {
-            if (defaultFeatureVector != null && defaultFeatureVector.Length > 0 && isPlaying)
+            if (defaultFeatureVector != null && defaultFeatureVector.Length > 0 && Application.isPlaying)
             {
                 return defaultFeatureVector;
             }
@@ -87,14 +86,6 @@ namespace ConFormSim.ObjectProperties
                 defaultValue.ApplySettings(this);
                 defaultFeatureVector = defaultValue.GetFeatureVector();
                 return defaultFeatureVector;
-            }
-            if (Application.isPlaying)
-            {
-                isPlaying = true;
-            }
-            else
-            {
-                isPlaying = false;
             }
 
             return new float[0];
