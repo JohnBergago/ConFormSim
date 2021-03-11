@@ -9,7 +9,7 @@ namespace ConFormSim.Actions
     /// the right (cw).
     /// </summary>
     [CreateAssetMenu(fileName = "BasicPhysicsMovement", menuName = "ConFormSim/Agent Actions/BasicPhysicsMovement", order = 1)]
-    public class BasicPhysicsMovement : AgentAction
+    public class BasicPhysicsMovement : DiscreteAgentAction
     {
         internal Vector3 targetPos;
         internal Quaternion targetRot;

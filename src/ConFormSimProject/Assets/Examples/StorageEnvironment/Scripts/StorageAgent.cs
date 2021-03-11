@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using Unity.MLAgents;
 using TMPro;
 using Unity.MLAgents.Sensors;
+using Unity.MLAgents.Actuators;
 using ConFormSim.Actions;
 using ConFormSim.Sensors;
 using ConFormSim.ObjectProperties;
@@ -70,7 +71,7 @@ public class StorageAgent : Agent
     private float m_RewardEpisode = 0;
     private float m_RewardPrevEpisode = 0;
     private int m_lastAction = 0;
-    private float heuristicActionInput = 0;
+    private int heuristicActionInput = 0;
     /// <summary>
     /// The monitor objects to display all the statistics UI.
     /// </summary>
@@ -152,7 +153,6 @@ public class StorageAgent : Agent
             csc.Width = (int) resetProperties.GetWithDefault("visObsWidth", 84);
             csc.Height = (int) resetProperties.GetWithDefault("visObsHeight", 84);
         }
-       
 
         if(m_Academy.useRayPerception)
         {
@@ -231,7 +231,7 @@ public class StorageAgent : Agent
         m_GroundRenderer.material = m_GroundMaterial;
     }
 
-    public override void OnActionReceived(float[] vectorAction)
+    public override void OnActionReceived(ActionBuffers actionBuffers)
     {   
         GameObject interactableObj = null;
         // first check if there is currently a object the agent is carrying
@@ -250,15 +250,15 @@ public class StorageAgent : Agent
             // see if there are detected objects
             interactableObj = m_ObjectDetector.DetectedObject;
         }
-
+        int action = actionBuffers.DiscreteActions[0];
         aActionProvider.PerformDiscreteAction(
             0,
-            (int) vectorAction[0], 
+            action, 
             kwargs: new Dictionary<string, object>{
                 {"interactable_gameobject", (object) interactableObj},
                 {"guide_transform", (object) handTransform}});
 
-        m_lastAction = (int) vectorAction[0];
+        m_lastAction = action;
 
         rewardCollector.UpdateReward();
 
@@ -317,35 +317,35 @@ public class StorageAgent : Agent
         // get Input for heuristics
         if (Input.GetKeyDown(KeyCode.W))
         {
-            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Go Fwd");
+            heuristicActionInput = aActionProvider.GetDiscreteActionIDByName(0, "Go Fwd");
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
-            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Go Bwd");
+            heuristicActionInput = aActionProvider.GetDiscreteActionIDByName(0, "Go Bwd");
         }
         else if (Input.GetKeyDown(KeyCode.A))
         {
-            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Go Left");
+            heuristicActionInput = aActionProvider.GetDiscreteActionIDByName(0, "Go Left");
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
-            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Go Right");
+            heuristicActionInput = aActionProvider.GetDiscreteActionIDByName(0, "Go Right");
         }
         else if (Input.GetKeyDown(KeyCode.Q))
         {
-            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Rotate Left");
+            heuristicActionInput = aActionProvider.GetDiscreteActionIDByName(0, "Rotate Left");
         }
         else if (Input.GetKeyDown(KeyCode.E))
         {
-            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Rotate Right");
+            heuristicActionInput = aActionProvider.GetDiscreteActionIDByName(0, "Rotate Right");
         }
         else if (Input.GetKeyDown(KeyCode.LeftShift))
         {
-            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Interact");
+            heuristicActionInput = aActionProvider.GetDiscreteActionIDByName(0, "Interact");
         }
         else if (Input.GetKeyDown(KeyCode.Space))
         {
-            heuristicActionInput = aActionProvider.GetActionIDByName(0, "Pick Up");
+            heuristicActionInput = aActionProvider.GetDiscreteActionIDByName(0, "Pick Up");
         }
         // Update UI
         MonitorUpdate();
@@ -448,10 +448,11 @@ public class StorageAgent : Agent
     }
 
     private int m_lastKeyPress;
-    public override void Heuristic(float[] actionsOut)
+    public override void Heuristic(in ActionBuffers actionBuffersOut)
     {        
-        actionsOut[0] = heuristicActionInput;
-        heuristicActionInput = aActionProvider.GetActionIDByName(0, "No Action");
+        var discreteActions = actionBuffersOut.DiscreteActions;
+        discreteActions[0] = heuristicActionInput;
+        heuristicActionInput = aActionProvider.GetDiscreteActionIDByName(0, "No Action");
     }
 
     private void MonitorUpdate()
@@ -472,7 +473,7 @@ public class StorageAgent : Agent
 
         m_AgentStats.text = 
             "Tot. Agent Steps: " + m_StepCountTotal + "\n\n"
-            + "Action: " + GetComponent<AgentActionProvider>().GetActionName(0, m_lastAction) + "\n"
+            + "Action: " + GetComponent<AgentActionProvider>().GetDiscreteActionName(0, m_lastAction) + "\n"
             + "Eps. Steps: " + m_StepCountEpisode + "\n"
             + "Eps. Reward: " +  m_RewardEpisode.ToString("N4") + "\n\n"
             + "Prev. Eps. Steps: " + m_StepCountPrevEpisode + "\n"

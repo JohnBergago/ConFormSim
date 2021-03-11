@@ -20,7 +20,7 @@ namespace ConFormSim.Actions
     /// the right (cw).
     /// </summary>
     [CreateAssetMenu(fileName = "BasicGridMovement", menuName = "ConFormSim/Agent Actions/BasicGridMovement", order = 1)]
-    public class BasicGridMovement : AgentAction
+    public class BasicGridMovement : DiscreteAgentAction
     {
         internal Vector3 targetPos;
         internal Quaternion targetRot;

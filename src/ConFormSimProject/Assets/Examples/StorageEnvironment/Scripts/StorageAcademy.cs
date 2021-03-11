@@ -152,7 +152,7 @@ public class StorageAcademy : MonoBehaviour
         // create new channel for property lists
         envListPropertiesChannel = new IntListPropertiesChannel();
         // register list side channel
-        SideChannelsManager.RegisterSideChannel(envListPropertiesChannel);
+        SideChannelManager.RegisterSideChannel(envListPropertiesChannel);
         
         Academy.Instance.OnEnvironmentReset += EnvironmentReset;
         featureVectorDefinition = ScriptableObject.CreateInstance<FeatureVectorDefinition>();

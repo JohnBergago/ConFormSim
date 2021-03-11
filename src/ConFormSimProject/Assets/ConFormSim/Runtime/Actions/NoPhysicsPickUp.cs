@@ -22,7 +22,7 @@ namespace ConFormSim.Actions
     /// method of the interactable.
     /// </remarks>
     [CreateAssetMenu(fileName = "NoPhysicsPickUp", menuName = "ConFormSim/Agent Actions/NoPhysicsPickUp", order = 1)]
-    public class NoPhysicsPickUp : AgentAction
+    public class NoPhysicsPickUp : DiscreteAgentAction
     {
         /// <summary>
         /// List of tags that will prevent the agent from dropping objects into

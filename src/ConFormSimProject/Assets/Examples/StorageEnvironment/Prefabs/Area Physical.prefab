@@ -136,22 +136,22 @@ PrefabInstance:
     - target: {fileID: 1989397546945565787, guid: 8bd4fb2f15001474badb01eab00a1639,
         type: 3}
       propertyPath: m_textInfo.characterCount
-      value: 17
+      value: 91
       objectReference: {fileID: 0}
     - target: {fileID: 1989397546945565787, guid: 8bd4fb2f15001474badb01eab00a1639,
         type: 3}
       propertyPath: m_textInfo.spaceCount
-      value: 2
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 1989397546945565787, guid: 8bd4fb2f15001474badb01eab00a1639,
         type: 3}
       propertyPath: m_textInfo.wordCount
-      value: 3
+      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 1989397546945565787, guid: 8bd4fb2f15001474badb01eab00a1639,
         type: 3}
       propertyPath: m_textInfo.lineCount
-      value: 1
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 1989397546945565787, guid: 8bd4fb2f15001474badb01eab00a1639,
         type: 3}
@@ -389,6 +389,30 @@ PrefabInstance:
       propertyPath: actionBranches.Array.data[0].actionList.Array.data[7]
       value: 
       objectReference: {fileID: 11400000, guid: 3db98c45898f1f1a39499616d54e9657,
+        type: 2}
+    - target: {fileID: 7741435915562789358, guid: 8bd4fb2f15001474badb01eab00a1639,
+        type: 3}
+      propertyPath: discreteActionBranches.Array.data[0].actionList.Array.data[1]
+      value: 
+      objectReference: {fileID: 11400000, guid: e5fe3483224287f71b1c5608acd6ed56,
+        type: 2}
+    - target: {fileID: 7741435915562789358, guid: 8bd4fb2f15001474badb01eab00a1639,
+        type: 3}
+      propertyPath: discreteActionBranches.Array.data[0].actionList.Array.data[2]
+      value: 
+      objectReference: {fileID: 11400000, guid: 467c424e7e1f66758916948d499a56c7,
+        type: 2}
+    - target: {fileID: 7741435915562789358, guid: 8bd4fb2f15001474badb01eab00a1639,
+        type: 3}
+      propertyPath: discreteActionBranches.Array.data[0].actionList.Array.data[3]
+      value: 
+      objectReference: {fileID: 11400000, guid: ee846f0e440910607ac013f3fb1fce5b,
+        type: 2}
+    - target: {fileID: 7741435915562789358, guid: 8bd4fb2f15001474badb01eab00a1639,
+        type: 3}
+      propertyPath: discreteActionBranches.Array.data[0].actionList.Array.data[4]
+      value: 
+      objectReference: {fileID: 11400000, guid: 2be8f1862e0e4a9488bab52394ba61d2,
         type: 2}
     m_RemovedComponents:
     - {fileID: 2525592523016631173, guid: 8bd4fb2f15001474badb01eab00a1639, type: 3}

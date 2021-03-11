@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 using Unity.MLAgents;
+using Unity.MLAgents.Actuators;
 using ConFormSim.Actions;
 using ConFormSim.Sensors;
 using TMPro;
@@ -25,7 +23,7 @@ public class BoxworldAgent : Agent
     private float m_PrevEpsReward;
 
     // current action for heuristic
-    private float m_CurrentAction = 0;
+    private int m_CurrentAction = 0;
 
     public override void Initialize()
     {
@@ -54,9 +52,10 @@ public class BoxworldAgent : Agent
         agentStats = m_MyGame.transform.FindDeepChild("AgentStats").gameObject.GetComponent<TextMeshProUGUI>();
     }
 
-    public override void OnActionReceived(float[] vectorAction)
+    public override void OnActionReceived(ActionBuffers actionBuffers)
     {   
-        m_AgentActionProvider.PerformDiscreteAction(0, (int) vectorAction[0]);
+        int action = actionBuffers.DiscreteActions[0];
+        m_AgentActionProvider.PerformDiscreteAction(0, action);
         
         // first update reward
         m_RewardCollector.UpdateReward();
@@ -85,10 +84,11 @@ public class BoxworldAgent : Agent
     }
 
     private int m_lastKeyPress;
-    public override void Heuristic(float[] actionsOut)
+    public override void Heuristic(in ActionBuffers actionBuffersOut)
     {            
-        actionsOut[0] = m_CurrentAction;
-        m_CurrentAction = m_AgentActionProvider.GetActionIDByName(0, "No Action");
+        var discreteActions = actionBuffersOut.DiscreteActions;
+        discreteActions[0] = m_CurrentAction;
+        m_CurrentAction = m_AgentActionProvider.GetDiscreteActionIDByName(0, "No Action");
     }
 
     private void UpdateAgentStats()
@@ -121,19 +121,19 @@ public class BoxworldAgent : Agent
 
         if (Input.GetKeyDown(KeyCode.W))
         {
-            m_CurrentAction = m_AgentActionProvider.GetActionIDByName(0, "Go Fwd");
+            m_CurrentAction = m_AgentActionProvider.GetDiscreteActionIDByName(0, "Go Fwd");
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
-            m_CurrentAction = m_AgentActionProvider.GetActionIDByName(0, "Go Bwd");
+            m_CurrentAction = m_AgentActionProvider.GetDiscreteActionIDByName(0, "Go Bwd");
         }
         else if (Input.GetKeyDown(KeyCode.A))
         {
-            m_CurrentAction = m_AgentActionProvider.GetActionIDByName(0, "Go Left");
+            m_CurrentAction = m_AgentActionProvider.GetDiscreteActionIDByName(0, "Go Left");
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
-            m_CurrentAction = m_AgentActionProvider.GetActionIDByName(0, "Go Right");
+            m_CurrentAction = m_AgentActionProvider.GetDiscreteActionIDByName(0, "Go Right");
         }
     }
 }

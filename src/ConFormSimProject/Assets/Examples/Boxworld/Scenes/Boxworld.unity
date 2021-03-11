@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.71210796, g: 0.72236013, b: 0.7039762, a: 1}
+  m_IndirectSpecularColor: {r: 0.17276813, g: 0.21589187, b: 0.29782552, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -438,6 +438,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   availableProperties: {fileID: 11400000, guid: b4c63f2021abbfa918b04dd1a65f3e08,
     type: 2}
+  updateChildRenderers: 0
   propertyList:
   - name: color
     property: {fileID: 1101337700}
@@ -609,6 +610,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   availableProperties: {fileID: 11400000, guid: b4c63f2021abbfa918b04dd1a65f3e08,
     type: 2}
+  updateChildRenderers: 0
   propertyList:
   - name: color
     property: {fileID: 403450333}
@@ -862,6 +864,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   availableProperties: {fileID: 11400000, guid: b4c63f2021abbfa918b04dd1a65f3e08,
     type: 2}
+  updateChildRenderers: 0
   propertyList:
   - name: color
     property: {fileID: 777424545}
@@ -1185,6 +1188,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   availableProperties: {fileID: 11400000, guid: b4c63f2021abbfa918b04dd1a65f3e08,
     type: 2}
+  updateChildRenderers: 0
   propertyList:
   - name: color
     property: {fileID: 1187402371}
@@ -1400,6 +1404,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   availableProperties: {fileID: 11400000, guid: b4c63f2021abbfa918b04dd1a65f3e08,
     type: 2}
+  updateChildRenderers: 0
   propertyList:
   - name: color
     property: {fileID: 555101256}
@@ -1763,6 +1768,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   availableProperties: {fileID: 11400000, guid: b4c63f2021abbfa918b04dd1a65f3e08,
     type: 2}
+  updateChildRenderers: 0
   propertyList:
   - name: color
     property: {fileID: 185086927}
@@ -2006,13 +2012,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67a0dbece8a01054e9cd184157bb7287, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actionBranches:
+  discreteActionBranches:
   - actionList:
     - {fileID: 11400000, guid: 683e51693675f44eda8a28bacf4dcf19, type: 2}
     - {fileID: 11400000, guid: e789a138e3146178b87d4a36d9fa739d, type: 2}
     - {fileID: 11400000, guid: adbc9979a020c012f832d75050fe05df, type: 2}
-    - {fileID: 11400000, guid: c4a3894fdef2820d08b42c03f74da295, type: 2}
     - {fileID: 11400000, guid: 3a612ae5646c61e6cb2e6e4dbae04217, type: 2}
+    - {fileID: 11400000, guid: c4a3894fdef2820d08b42c03f74da295, type: 2}
+  continuousActions: []
 --- !u!114 &5607449858129417777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2049,7 +2056,6 @@ MonoBehaviour:
   featureLayer: 0
   m_Width: 84
   m_Height: 84
-  m_Grayscale: 0
   featureVectorDefinition: {fileID: 11400000, guid: b4c63f2021abbfa918b04dd1a65f3e08,
     type: 2}
   noiseFunction: {fileID: 0}
@@ -2180,12 +2186,18 @@ MonoBehaviour:
   m_BrainParameters:
     VectorObservationSize: 0
     NumStackedVectorObservations: 1
-    VectorActionSize: 05000000
+    m_ActionSpec:
+      m_NumContinuousActions: 0
+      BranchSizes: 
+    VectorActionSize: 
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
+    hasUpgradedBrainParametersWithActionSpec: 1
   m_Model: {fileID: 0}
   m_InferenceDevice: 0
   m_BehaviorType: 0
   m_BehaviorName: Boxworld
   TeamId: 0
   m_UseChildSensors: 1
+  m_UseChildActuators: 1
+  m_ObservableAttributeHandling: 0

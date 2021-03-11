@@ -22,7 +22,7 @@ namespace ConFormSim.Actions
     /// method of the interactable.
     /// </remarks>
     [CreateAssetMenu(fileName = "PhysicsPickUp", menuName = "ConFormSim/Agent Actions/PhysicsPickUp", order = 1)]
-    public class PhysicsPickUp : AgentAction
+    public class PhysicsPickUp : DiscreteAgentAction
     {
         /// <summary>
         /// Local Position of the guide when dropping an object. This influences the

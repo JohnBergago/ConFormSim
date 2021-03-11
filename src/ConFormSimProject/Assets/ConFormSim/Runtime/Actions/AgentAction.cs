@@ -32,10 +32,10 @@ namespace ConFormSim.Actions
     }
 
     /// <summary>
-    /// A class inheriting from AgentAction has to implement the Execute method.
+    /// A class inheriting from DiscreteAgentAction has to implement the Execute method.
     /// This method is called by the AgentActionProvider of an agent.
     /// </summary>
-    public class AgentAction : ScriptableObject
+    public class DiscreteAgentAction : ScriptableObject
     {
         public string actionName;
 
@@ -48,6 +48,32 @@ namespace ConFormSim.Actions
         /// comment.</returns>
         public virtual ActionOutcome Execute(
             GameObject agent, 
+            Dictionary<string, object> kwargs = null)
+        {
+            // nothing
+            return new ActionOutcome(true, "");
+        }
+    }
+
+    /// <summary>
+    /// A class inheriting from ContinuousAgentAction has to implement the Execute method.
+    /// This method is called by the AgentActionProvider of an agent.
+    /// </summary>
+    public class ContinuousAgentAction : ScriptableObject
+    {
+        public string actionName;
+
+        /// <summary>
+        /// Execute the specified action.
+        /// </summary>
+        /// <param name="agent">Agent that performs this action.</param>
+        /// <param name="value">The value for the contiuous action.</param>
+        /// <param name="kwargs">Optional parameters as a dictionary</param>
+        /// <returns>Whether the action was successful or not plus
+        /// comment.</returns>
+        public virtual ActionOutcome Execute(
+            GameObject agent, 
+            float value,
             Dictionary<string, object> kwargs = null)
         {
             // nothing
