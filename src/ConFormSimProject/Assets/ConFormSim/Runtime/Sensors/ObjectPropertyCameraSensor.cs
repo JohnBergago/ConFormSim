@@ -154,6 +154,7 @@ namespace ConFormSim.Sensors
             
             int index = 0;
             int numLayer = (featureVectorDefinition.VectorLength+3)/4;
+            int imageDepth = featureVectorDefinition.VectorLength;
             
             // invert rows due to texture format
             for(int row = m_Width-1; row > -1; row--)
@@ -162,7 +163,7 @@ namespace ConFormSim.Sensors
                 {
                     for (int layer = 0; layer < numLayer; layer++)
                     {
-                        for(int depth = 0; depth < 4; depth++)
+                        for(int depth = 0; depth < 4 && layer * 4 + depth < imageDepth; depth++)
                         {
                             writer[index++] = m_PropertyImage[depth + 4 * (col+ m_Width*(row + m_Height*layer))];
                         }
@@ -222,6 +223,7 @@ namespace ConFormSim.Sensors
             var prevCameraRT = m_Camera.targetTexture;
             var oldCameraClearFlags = m_Camera.clearFlags;
             var oldCameraBackground = m_Camera.backgroundColor;
+            var oldCamState = m_Camera.enabled;
             // save current active render texture
             var prevActiveRT = RenderTexture.active;
 
@@ -270,7 +272,7 @@ namespace ConFormSim.Sensors
             m_Camera.rect = oldRec;
             m_Camera.clearFlags = oldCameraClearFlags;
             m_Camera.backgroundColor = oldCameraBackground;
-            m_Camera.enabled = true;
+            m_Camera.enabled = oldCamState;
             RenderTexture.active = prevActiveRT;
             RenderTexture.ReleaseTemporary(tempRT);
             DestroyTexture(texture2D);

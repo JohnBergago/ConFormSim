@@ -28,7 +28,7 @@ public class AreaSpawner : MonoBehaviour
         Random.InitState(42);
         envParams = Academy.Instance.EnvironmentParameters;
         envListParams = new IntListPropertiesChannel();
-        SideChannelsManager.RegisterSideChannel(envListParams);
+        SideChannelManager.RegisterSideChannel(envListParams);
         Academy.Instance.OnEnvironmentReset += OnEnvironmentReset;
     }
     
@@ -90,7 +90,7 @@ public class AreaSpawner : MonoBehaviour
                 GameObject spawned = Instantiate(areaPrefab, spawnPos, Quaternion.identity);
                 areas[i * squareDim + j] = spawned;
                 spawned.SetActive(true);
-                if (i * squareDim + j != 0)
+                if ((i == 0 && j != 0) || i != 0)
                 {
                     spawned.transform.FindDeepChild("Monitor").gameObject.SetActive(false);
                     spawned.transform.FindDeepChild("TopDownCamera").gameObject.GetComponent<Camera>().enabled = false;
