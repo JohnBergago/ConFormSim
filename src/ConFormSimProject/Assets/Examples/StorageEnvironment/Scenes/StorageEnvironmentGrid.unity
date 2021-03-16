@@ -900,7 +900,7 @@ MonoBehaviour:
   boxesVanish: 0
   boxesNeedDrop: 1
   sparseRewardOnly: 0
-  maxStep: 0
+  maxStep: 200
   cameraType: 0
   taskLevel: 3
   featureVectorDefinition: {fileID: 0}

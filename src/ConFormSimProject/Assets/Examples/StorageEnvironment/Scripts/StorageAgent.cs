@@ -233,6 +233,7 @@ public class StorageAgent : Agent
 
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {   
+        m_StepCountTotal++;
         GameObject interactableObj = null;
         // first check if there is currently a object the agent is carrying
         if (handTransform.childCount > 0)
@@ -275,19 +276,23 @@ public class StorageAgent : Agent
             {
                 StartCoroutine(GoalScoredSwapGroundMaterial(m_Academy.goalReachedMaterial, Time.fixedDeltaTime));
             }
+            m_StepCountPrevEpisode = this.StepCount;
+            m_RewardPrevEpisode = GetCumulativeReward();
             EndEpisode();
         }
         if(m_MyArea.GetInteractableObjects().Length == 0)
         {
+            m_StepCountPrevEpisode = this.StepCount;
+            m_RewardPrevEpisode = GetCumulativeReward();
             EndEpisode();
         }
-        m_StepCountTotal++;
+       
     }
 
 
     public override void OnEpisodeBegin()
     {
-        Debug.Log("Reset Agent");
+        // Debug.Log("Reset Agent");
         m_MyArea.ResetArea();
 
         // update maxStep based on latest side channel messages
@@ -457,19 +462,9 @@ public class StorageAgent : Agent
 
     private void MonitorUpdate()
     {
-        // was there a reset?
-        if(m_StepCountEpisode > this.StepCount)
-        {
-            m_RewardPrevEpisode = GetComponent<RewardCollector>().GetPrevReward();
-            m_StepCountPrevEpisode = m_StepCountEpisode;
-            m_RewardEpisode = 0;
-            m_StepCountEpisode = this.StepCount;
-        }
-        else
-        {
-            m_StepCountEpisode = this.StepCount;
-            m_RewardEpisode = GetCumulativeReward();
-        }        
+
+        m_StepCountEpisode = this.StepCount;
+        m_RewardEpisode = GetCumulativeReward();
 
         m_AgentStats.text = 
             "Tot. Agent Steps: " + m_StepCountTotal + "\n\n"

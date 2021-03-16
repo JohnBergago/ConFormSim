@@ -65,7 +65,7 @@ public class RewardCollector : MonoBehaviour
 
     public void Reset()
     {
-        Debug.Log("RewardCollector Reset");
+        // Debug.Log("RewardCollector Reset");
         m_CurrentReward = 0;
         m_PrevReward = m_CumReward;
         m_CumReward = 0;

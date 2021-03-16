@@ -57,7 +57,6 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -69,7 +68,6 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -107,8 +105,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7c87c9c9c600bb40b981aef12567eeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agent: {fileID: 0}
-  originalColor: {r: 0, g: 0, b: 0, a: 0}
+  edgePrimitivePrefab: {fileID: 3953920500960426032, guid: 056b52176130d8d49bad3e87276d05ef,
+    type: 3}
 --- !u!114 &-4644979577091689011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -122,11 +120,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   availableProperties: {fileID: 0}
-  propertyList:
-  - name: test
-    property: {fileID: 0}
-  - name: test2
-    property: {fileID: 0}
+  updateChildRenderers: 0
+  propertyList: []
   m_PropertyDict:
     reorderableList:
       canAdd: 0

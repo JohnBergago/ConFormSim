@@ -356,13 +356,18 @@ public class StorageAcademy : MonoBehaviour
             GameObject item  = Instantiate(itemSettings.itemPrefab);
             item.SetActive(false);
 
-            Material colMat = new Material(item.GetComponent<Renderer>().sharedMaterial);
+            Renderer itemRenderer = item.GetComponent<Renderer>();
+            MaterialPropertyBlock mbpColor = new MaterialPropertyBlock();
+            if(itemRenderer.HasPropertyBlock())
+            {
+                itemRenderer.GetPropertyBlock(mbpColor);
+            }
             colId = UnityEngine.Random.Range(0, colList.Count);
             Color32 col = colList.ElementAt(colId);
-            colMat.SetColor("_Color", col);
+            mbpColor.SetColor("_Color", col);
             colList.RemoveAt(colId);
 
-            item.GetComponent<Renderer>().material = colMat;
+            itemRenderer.SetPropertyBlock(mbpColor);
             itemSettings.interactableObjects.Add(item);
 
             targetTags[i] = "base_" + Convert.ToString(Utility.GetIntFromColor(col), toBase: 16);
@@ -378,7 +383,19 @@ public class StorageAcademy : MonoBehaviour
             ObjectPropertyProvider opp;
             if (item.TryGetComponent<ObjectPropertyProvider>(out opp))
             {
-                Color32 col = item.GetComponent<Renderer>().material.GetColor("_Color");
+                Color32 col;
+                Renderer itemRenderer = item.GetComponent<Renderer>();
+                if(itemRenderer.HasPropertyBlock())
+                {
+                    MaterialPropertyBlock properties = new MaterialPropertyBlock();
+                    itemRenderer.GetPropertyBlock(properties);
+                    col = properties.GetColor("_Color");
+                } 
+                else
+                {
+                    col = itemRenderer.sharedMaterial.GetColor("_Color");
+                }
+                
                 string tag = "base_" + 
                     Convert.ToString(Utility.GetIntFromColor(col), toBase: 16);
                 List<string> targetTagsList = new List<string>();
@@ -411,11 +428,14 @@ public class StorageAcademy : MonoBehaviour
             colList.RemoveAt(colId);
 
             GameObject baseArea  = Instantiate(areaSettings.basePrefab);
+            Renderer baseRenderer = baseArea.GetComponent<Renderer>();
             baseArea.SetActive(false);
-            Material colMat = new Material(baseArea.GetComponent<Renderer>().sharedMaterial);
+            MaterialPropertyBlock mbpColor = new MaterialPropertyBlock();
+            if (baseRenderer.HasPropertyBlock())
+            {
+                baseRenderer.GetPropertyBlock(mbpColor);
+            }
             Color baseColor = new Color32(col.r, col.g, col.b, col.a);
-            BaseController baseContr = baseArea.GetComponent<BaseController>();
-            baseContr.originalColor = baseColor;
             if(areaSettings.noBaseFillColor)
             {
                 baseColor.a = 0;
@@ -426,8 +446,8 @@ public class StorageAcademy : MonoBehaviour
                 Color.RGBToHSV(baseColor, out H, out S, out V);
                 baseColor = Color.HSVToRGB(H, 0.5f, V * 1.2f);
             }
-            colMat.SetColor("_Color", baseColor);
-            baseArea.GetComponent<Renderer>().material = colMat;
+            mbpColor.SetColor("_Color", baseColor);
+            baseRenderer.SetPropertyBlock(mbpColor);
 
             baseTags[i] = "base_" + 
                     Convert.ToString(Utility.GetIntFromColor(col), toBase: 16);
@@ -445,7 +465,19 @@ public class StorageAcademy : MonoBehaviour
             ObjectPropertyProvider opp;
             if (baseArea.TryGetComponent<ObjectPropertyProvider>(out opp))
             {
-                Color32 col = baseArea.GetComponent<Renderer>().material.GetColor("_Color");
+                Color32 col;
+                Renderer baseRenderer = baseArea.GetComponent<Renderer>();
+                if(baseRenderer.HasPropertyBlock())
+                {
+                    MaterialPropertyBlock properties = new MaterialPropertyBlock();
+                    baseRenderer.GetPropertyBlock(properties);
+                    col = properties.GetColor("_Color");
+                } 
+                else
+                {
+                    col = baseArea.GetComponent<Renderer>().material.GetColor("_Color");
+                }
+                
                 string tag = "base_" + 
                     Convert.ToString(Utility.GetIntFromColor(col), toBase: 16);
                 List<string> baseTagsList = new List<string>();

@@ -67,10 +67,9 @@ public class GameGenerator : MonoBehaviour
 
             Quaternion.identity, 
             transform);
-        Material newMaterial = Instantiate(newObj.GetComponent<Renderer>().material);
-        newMaterial.shader = Shader.Find("Unlit/TextureColored");
-        newMaterial.SetColor("_Color", color);
-        newObj.GetComponent<Renderer>().material = newMaterial;
+        MaterialPropertyBlock materialPropertyBlock = new MaterialPropertyBlock();
+        materialPropertyBlock.SetColor("_Color", color);
+        newObj.GetComponent<Renderer>().SetPropertyBlock(materialPropertyBlock);
         return newObj;
     }
 

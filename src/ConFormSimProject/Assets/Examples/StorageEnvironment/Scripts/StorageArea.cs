@@ -98,10 +98,6 @@ public class StorageArea : MonoBehaviour
             (m_GridSizeX - 1) / 2f, 
             0.0f, 
             (m_GridSizeZ - 1) / 2f);
-        
-        m_Plane.GetComponent<Renderer>().material.SetTextureScale(
-            "_MainTex",
-            new Vector2(m_GridSizeX, m_GridSizeZ));
 
         // adjust north wall
         m_Sn.transform.localScale = new Vector3(1, 4, m_GridSizeX + 2);
@@ -268,7 +264,10 @@ public class StorageArea : MonoBehaviour
         foreach(Vector3 pos in positions)
         {
             centerPos += pos;
-            GameObject spawned = Instantiate(baseTile, pos, Quaternion.identity);
+            GameObject spawned = InstantiateWithMaterialPropertyBlock(
+                                    baseTile, 
+                                    pos, 
+                                    Quaternion.identity);
             spawned.SetActive(true);
             // Set spawned item to be a child of the area transform
             AddObjectToAreaTransform(spawned);
@@ -289,14 +288,31 @@ public class StorageArea : MonoBehaviour
         }
 
         // Create color for edges based on the original color
-        Material edgeColor = new Material(Shader.Find("Unlit/TextureColored"));
-        Color baseColor = baseTile.GetComponent<Renderer>().material.color;
+        MaterialPropertyBlock mpbEdge = new MaterialPropertyBlock();
+        Renderer baseTileRenderer = baseTile.GetComponent<Renderer>();
+        Color baseColor = Color.white;
+        bool noColorProp = true;
+        if (baseTileRenderer.HasPropertyBlock())
+        {
+            baseTileRenderer.GetPropertyBlock(mpbEdge);
+            baseColor = mpbEdge.GetColor("_Color");
+            if (!baseColor.Equals(new Color(0,0,0,0)))
+            {
+                noColorProp = false;
+            }
+        }
+        if (noColorProp)
+        {
+            baseColor = baseTileRenderer.sharedMaterial.GetColor("_Color");
+        }
         float H, S, V;
         Color.RGBToHSV(baseColor, out H, out S, out V);
         // if the base is transparent keep the original colors for the edges
         if (m_Academy.areaSettings.noBaseFillColor)
         {
-            edgeColor.color = new Color(baseColor.r, baseColor.g, baseColor.b, 1.0f);
+            mpbEdge.SetColor(
+                "_Color", 
+                new Color(baseColor.r, baseColor.g, baseColor.b, 1.0f));
         }
         // if brighter bases set, keep original color on the edges
         // else if (m_Academy.areaSettings.brighterBases)
@@ -305,7 +321,9 @@ public class StorageArea : MonoBehaviour
         // }
         else
         {
-            edgeColor.color = Color.HSVToRGB(H, S * 1.5f, V / 2.0f);
+            mpbEdge.SetColor(
+                "_Color", 
+                Color.HSVToRGB(H, S * 1.5f, V / 2.0f));
         }
         
         // draw border lines
@@ -318,51 +336,58 @@ public class StorageArea : MonoBehaviour
             lineLengthz = baseTile.transform.localScale.z * zSize / 2.0f;
         }
 
+        // for each corner
         for (int i = 0; i < 4; i++)
         {
             int signX = (i / 2) * 2 - 1;
             int signZ = (i % 2) * 2 - 1;
 
-            // create cubes of which the elements will be made of
-            GameObject cornerObjX = GameObject.CreatePrimitive(PrimitiveType.Cube); 
-            cornerObjX.name = "corner " + i + "_x";
-            Destroy(cornerObjX.GetComponent<Collider>());
-
-            GameObject cornerObjZ = GameObject.CreatePrimitive(PrimitiveType.Cube); 
-            cornerObjZ.name = "corner " + i + "_z";
-            Destroy(cornerObjZ.GetComponent<Collider>());
-
-            cornerObjX.transform.SetParent(baseAreaObj.transform);
-            cornerObjZ.transform.SetParent(baseAreaObj.transform);
-            cornerObjX.GetComponent<Renderer>().material = edgeColor;
-            cornerObjZ.GetComponent<Renderer>().material = edgeColor;
-
+            // calculate corner positions
             Vector3 cornerPos = centerPos
                         + new Vector3(
                             signX * xSize / 2.0f * baseTile.transform.localScale.x,
-                            0,
+                            baseTile.transform.position.y + 0.01f - centerPos.y,
                             signZ * zSize / 2.0f * baseTile.transform.localScale.z);
             cornerPos.y = baseTile.transform.position.y + 0.01f;
 
-            // position and scale the z cube
-            cornerObjZ.transform.position = cornerPos
-                    - signZ * (lineWidth + lineLengthz) / 2.0f * Vector3.forward
-                    - signX * lineWidth / 2.0f * Vector3.right
-                    + signZ * 0.01f * Vector3.forward + 0.01f * signX * Vector3.right; 
-            cornerObjZ.transform.localScale = new Vector3(
-                    lineWidth,
-                    baseTile.transform.localScale.y,
-                    lineLengthz + lineWidth);
-            
-            // position and scale the x cube
-            cornerObjX.transform.position = cornerPos
+            // calculate x position for each edge
+            Vector3 posX = cornerPos
                     - signZ * lineWidth / 2.0f * Vector3.forward
                     - signX * (lineWidth + lineLengthx / 2.0f) * Vector3.right
                     + signZ * 0.01f * Vector3.forward + 0.01f * signX * Vector3.right; 
+    
+            // create cubes of which the elements will be made of
+            GameObject cornerObjX = Instantiate(
+                    baseTile.GetComponent<BaseController>().edgePrimitivePrefab,
+                    posX,
+                    Quaternion.identity,
+                    baseAreaObj.transform); 
+            cornerObjX.name = "corner " + i + "_x";
+            // scale the x cube
             cornerObjX.transform.localScale = new Vector3(
                     lineLengthx,
                     baseTile.transform.localScale.y,
                     lineWidth);
+
+            // repeat for the z-edge object
+            Vector3 posZ = cornerPos
+                    - signZ * (lineWidth + lineLengthz) / 2.0f * Vector3.forward
+                    - signX * lineWidth / 2.0f * Vector3.right
+                    + signZ * 0.01f * Vector3.forward + 0.01f * signX * Vector3.right; 
+            GameObject cornerObjZ = Instantiate(
+                    baseTile.GetComponent<BaseController>().edgePrimitivePrefab,
+                    posZ,
+                    Quaternion.identity,
+                    baseAreaObj.transform); 
+            cornerObjZ.name = "corner " + i + "_z";
+            // scale the z cube
+            cornerObjZ.transform.localScale = new Vector3(
+                    lineWidth,
+                    baseTile.transform.localScale.y,
+                    lineLengthz + lineWidth);
+
+            cornerObjX.GetComponent<Renderer>().SetPropertyBlock(mpbEdge);
+            cornerObjZ.GetComponent<Renderer>().SetPropertyBlock(mpbEdge);
         }
     }
 
@@ -447,7 +472,10 @@ public class StorageArea : MonoBehaviour
                 QueryTriggerInteraction.Collide).Length > 0 
             || (IntersectsBaseArea(spawnPos, bounds.extents.x * 2, bounds.extents.z * 2))
             );
-        GameObject spawnedObj = Instantiate(obj, spawnPos, spawnRot);
+        GameObject spawnedObj = InstantiateWithMaterialPropertyBlock(
+                                    obj, 
+                                    spawnPos, 
+                                    spawnRot);
         spawnedObj.SetActive(true);
         return spawnedObj;
     }
@@ -820,7 +848,7 @@ public class StorageArea : MonoBehaviour
         string forbiddenString = "";
         foreach(string p in forbiddenPlaces)
             forbiddenString += p + ", ";
-        Debug.Log(forbiddenString);
+        // Debug.Log(forbiddenString);
         // as GenerateSpawnPos generates global coordinates we have to set the global
         // position
         agent.transform.position = spawnPos;
@@ -846,5 +874,29 @@ public class StorageArea : MonoBehaviour
     public GridBehaviour GetPathGrid()
     {
         return m_PathGrid;
+    }
+
+    /// <summary>
+    /// Instantiates a new copy of a game object and copies its renderer
+    /// material property blocks, if any exist.
+    /// </summary>
+    /// <param name="gameObject">Original object of which a copy is instantiated.</param>
+    /// <param name="pos">Spawn position.</param>
+    /// <param name="rotation">Spawn Rotation.</param>
+    /// <returns>Spawned GameObject</returns>
+    public GameObject InstantiateWithMaterialPropertyBlock(
+        GameObject gameObject, 
+        Vector3 pos, 
+        Quaternion rotation)
+    {
+        GameObject spawnedObj = Instantiate(gameObject, pos, rotation);
+        MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+        Renderer gameObjectRenderer;
+        if (gameObject.TryGetComponent<Renderer>(out gameObjectRenderer))
+        {
+            gameObject.GetComponent<Renderer>().GetPropertyBlock(mpb);
+            spawnedObj.GetComponent<Renderer>().SetPropertyBlock(mpb);
+        }
+        return spawnedObj;
     }
 }

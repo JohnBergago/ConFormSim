@@ -67,15 +67,30 @@ namespace ConFormSim.ObjectProperties
                 Renderer renderer;
                 if (attachedGameObject.TryGetComponent<Renderer>(out renderer))
                 {
+                    Color color = Color.white;
+                    MaterialPropertyBlock mpb = new MaterialPropertyBlock();
+                    bool noColorProp = true;
+                    if (renderer.HasPropertyBlock())
+                    {
+                        renderer.GetPropertyBlock(mpb);
+                        color = mpb.GetColor("_Color");
+                        if (!color.Equals(new Color(0,0,0,0)))
+                        {
+                            noColorProp = false;
+                        }
+                    }
+                    if (noColorProp)
+                    {
+                        color = renderer.sharedMaterial.GetColor("_Color");
+                    }
                     // if noise was applied before, but the color has changed
                     // meanwhile, apply noise again
-                    if (value != renderer.material.GetColor("_Color"))
+                    if (value != color)
                     {
-                        value = renderer.material.GetColor("_Color");
+                        value = color;
                         ApplyNoise();
-                        Material newColor = Instantiate(renderer.sharedMaterial);
-                        newColor.SetColor("_Color", this.value);
-                        renderer.material = newColor;
+                        mpb.SetColor("_Color", this.value);
+                        renderer.SetPropertyBlock(mpb);
                     }
                     // Debug.Log("Set color for " + attachedGameObject.name + "
                     // to (" + value.r + ", "+ value.g + ", " + value.b + ")");

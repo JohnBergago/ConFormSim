@@ -195,20 +195,27 @@ namespace ConFormSim.ObjectProperties
         /// </summary>
         public void SetFVRenderProperty()
         {
-            MaterialPropertyBlock mpb = new MaterialPropertyBlock();
-            mpb.SetInt("_FeatureVectorLength", availableProperties.VectorLength);
-            mpb.SetFloatArray("_FeatureVector", GetFeatureVector());  
-            mpb.SetInt("_FVDefinitionID", availableProperties.GetInstanceID());
-
+            // retrieve all relevant properties           
+            int fvLength = availableProperties.VectorLength;
+            List<float> featureVector = GetFeatureVector();
+            int fvInstanceID = availableProperties.GetInstanceID();
 
             // set material property block for all renders belonging to this
             // object property provider
+             MaterialPropertyBlock mpb = new MaterialPropertyBlock();
             if(updateChildRenderers)
             {
                 GetChildRenderers();
             }
             for(int i = 0; i < oppRenderers.Count; i++)
             {
+                if (oppRenderers[i].HasPropertyBlock())
+                {
+                    oppRenderers[i].GetPropertyBlock(mpb);
+                }
+                mpb.SetInt("_FeatureVectorLength", fvLength);
+                mpb.SetFloatArray("_FeatureVector", featureVector);  
+                mpb.SetInt("_FVDefinitionID", fvInstanceID);
                 oppRenderers[i].SetPropertyBlock(mpb);
             }
         }
