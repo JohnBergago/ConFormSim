@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BaseController : MonoBehaviour
 {
+    public string typeName = "";
     public GameObject edgePrimitivePrefab;
     
     void OnTriggerExit(Collider other)

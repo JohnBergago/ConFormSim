@@ -74,6 +74,7 @@ public class StorageAcademy : MonoBehaviour
     public bool useVisual;
     public bool useRayPerception;
     public bool useObjectPropertyCamera;
+    public bool noObjPropForVector;
 
     public List<Color32> colorPool; 
 
@@ -370,7 +371,11 @@ public class StorageAcademy : MonoBehaviour
             itemRenderer.SetPropertyBlock(mbpColor);
             itemSettings.interactableObjects.Add(item);
 
-            targetTags[i] = "base_" + Convert.ToString(Utility.GetIntFromColor(col), toBase: 16);
+            targetTags[i] = "base_" + Utility.GetIntFromColor(col).ToString("X8");
+            item.GetComponent<ObjectController>().typeName = 
+                "col_" + Utility.GetIntFromColor(col).ToString("X8")
+                + "_" + targetTags[i];
+
         }
         return targetTags;
     }
@@ -397,7 +402,7 @@ public class StorageAcademy : MonoBehaviour
                 }
                 
                 string tag = "base_" + 
-                    Convert.ToString(Utility.GetIntFromColor(col), toBase: 16);
+                    Utility.GetIntFromColor(col).ToString("X8");
                 List<string> targetTagsList = new List<string>();
                 targetTagsList.Add(tag);
 
@@ -450,7 +455,10 @@ public class StorageAcademy : MonoBehaviour
             baseRenderer.SetPropertyBlock(mbpColor);
 
             baseTags[i] = "base_" + 
-                    Convert.ToString(Utility.GetIntFromColor(col), toBase: 16);
+                    Utility.GetIntFromColor(col).ToString("X8");
+            baseArea.GetComponent<BaseController>().typeName = 
+                "col_" + Utility.GetIntFromColor(col).ToString("X8")
+                + "_" + baseTags[i];
 
             areaSettings.baseObjects.Add(baseArea);
         }
@@ -479,7 +487,7 @@ public class StorageAcademy : MonoBehaviour
                 }
                 
                 string tag = "base_" + 
-                    Convert.ToString(Utility.GetIntFromColor(col), toBase: 16);
+                    Utility.GetIntFromColor(col).ToString("X8");
                 List<string> baseTagsList = new List<string>();
                 baseTagsList.Add(tag);
 
@@ -529,6 +537,11 @@ public class StorageAcademy : MonoBehaviour
             .GetWithDefault(
                 "useObjectPropertyCamera", 
                 useObjectPropertyCameraDefault) == 0.0f ? false : true;
+        float noObjPropForVectorDefault = noObjPropForVector ? 1.0f : 0.0f;
+        noObjPropForVector = envPropertiesChannel
+            .GetWithDefault(
+                "noObjectPropForVector", 
+                noObjPropForVectorDefault) == 0.0f ? false : true;
         numTrainAreas = (int) envPropertiesChannel
             .GetWithDefault("numTrainAreas", numTrainAreas);
         taskLevel = (int) envPropertiesChannel

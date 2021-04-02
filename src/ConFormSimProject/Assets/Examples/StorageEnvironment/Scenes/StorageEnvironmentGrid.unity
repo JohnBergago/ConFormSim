@@ -861,7 +861,8 @@ MonoBehaviour:
   numTrainAreas: 1
   useVisual: 0
   useRayPerception: 0
-  useObjectPropertyCamera: 1
+  useObjectPropertyCamera: 0
+  noObjPropForVector: 1
   colorPool:
   - serializedVersion: 2
     rgba: 4278255360

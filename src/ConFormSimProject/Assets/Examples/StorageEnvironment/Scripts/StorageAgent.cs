@@ -269,6 +269,9 @@ public class StorageAgent : Agent
         {
             Debug.Log("step: " + this.StepCount + "\tID: " + GetInstanceID() + "\tReward: " + reward);
         }
+        // Update Stats for Monitor
+        m_StepCountEpisode = this.StepCount;
+        m_RewardEpisode = GetCumulativeReward();
         
         if (rewardCollector.isDone())
         {
@@ -276,14 +279,10 @@ public class StorageAgent : Agent
             {
                 StartCoroutine(GoalScoredSwapGroundMaterial(m_Academy.goalReachedMaterial, Time.fixedDeltaTime));
             }
-            m_StepCountPrevEpisode = this.StepCount;
-            m_RewardPrevEpisode = GetCumulativeReward();
             EndEpisode();
         }
         if(m_MyArea.GetInteractableObjects().Length == 0)
         {
-            m_StepCountPrevEpisode = this.StepCount;
-            m_RewardPrevEpisode = GetCumulativeReward();
             EndEpisode();
         }
        
@@ -315,6 +314,10 @@ public class StorageAgent : Agent
         m_PathGrid.UpdateGrid();
 
         GetComponent<RewardCollector>().Reset();
+
+        // update stats
+        m_StepCountPrevEpisode = m_StepCountEpisode;
+        m_RewardPrevEpisode = m_RewardEpisode;
     }
 
     void Update()

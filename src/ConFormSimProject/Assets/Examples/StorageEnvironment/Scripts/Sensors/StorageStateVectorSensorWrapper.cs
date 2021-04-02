@@ -16,6 +16,7 @@ public class StorageStateVectorSensorWrapper : ISensor
 
     VectorSensor m_VectorSensor;
     int m_NumPropertiesPerObject;
+    int m_FeatureVecLength = 0;
     FeatureVectorDefinition m_FeatureVectorDefinition;
 
     /// <summary>
@@ -57,12 +58,22 @@ public class StorageStateVectorSensorWrapper : ISensor
         // Properties per item and base: position + properties from requester
         m_NumPropertiesPerObject = 2 + m_Academy.areaSettings.baseTypesToUse;
 
+        if(m_Academy.noObjPropForVector)
+        {
+            Debug.Log("Not using Feature Vector for Vector observations.");
+            m_FeatureVecLength = 0;
+        }
+        else
+        {
+            m_FeatureVecLength = featureVectorDefinition.VectorLength;
+        }
+
         // calculate size of the sensor
         int observationSize =
             // Agent position (x, z, rot)  
             3       
-            + maxNumItems * (2 + featureVectorDefinition.VectorLength)
-            + maxNumBases * (2 + featureVectorDefinition.VectorLength);
+            + maxNumItems * (2 + m_FeatureVecLength)
+            + maxNumBases * (2 + m_FeatureVecLength);
         Debug.Log("Observation Size: " + observationSize);
         m_VectorSensor = new VectorSensor(observationSize, name);
     }
@@ -112,69 +123,86 @@ public class StorageStateVectorSensorWrapper : ISensor
 
         // Debug.Log((2 * agentPos.x / gridMaxX - 1) + ", " + (2 * agentPos.z / gridMaxZ - 1) + ", "  + ((m_Agent.transform.rotation.eulerAngles.y % 360) / 180.0f - 1));        
 
-        // add item properties
-        int maxNumItems = m_Academy.itemSettings.itemTypesToUse 
-            * m_Academy.itemSettings.numberPerItemType;
-        for (int i = 0; i < maxNumItems; i++)
+        GameObject[] interactableObjects = m_Area.GetInteractableObjects();
+        int interObjIdx = 0;
+        for (int i = 0; i < m_Academy.itemSettings.itemTypesToUse; i++)
         {
-            // Debug.Log("Item " + i);
-            if (i < m_Area.GetInteractableObjects().Length && m_Area.GetInteractableObjects()[i] != null)
+            string currentType = m_Academy.itemSettings.interactableObjects[i]
+                .GetComponent<ObjectController>().typeName;
+            for(int j = 0; j < m_Academy.itemSettings.numberPerItemType; j++)
             {
-                GameObject item = m_Area.GetInteractableObjects()[i];
-                // add position of the item relative to the agent
-                Vector3 itemPos = grid
-                    .WorldToGridCoordinates(item.transform.position);
-                Vector3 itemPosRel = itemPos - agentPos;
-                m_VectorSensor.AddObservation( 
-                    (itemPosRel.x + gridMaxX) / gridMaxX - 1 );
-                m_VectorSensor.AddObservation( 
-                    (itemPosRel.z + gridMaxZ) / gridMaxZ - 1 );
-                // Debug.Log(((itemPosRel.x + gridMaxX) / gridMaxX - 1 ) + ", " + ((itemPosRel.z + gridMaxZ) / gridMaxZ - 1 ));
-
-                // request featurevector
-                m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(item));
-            
-            }
-            else 
-            {
-                // Debug.Log("Empty Item");
-                for (int j = 0; j < 2 + m_FeatureVectorDefinition.VectorLength; j++)
+                if (interObjIdx < interactableObjects.Length && 
+                    interactableObjects[interObjIdx]
+                        .GetComponent<ObjectController>().typeName == currentType)
                 {
-                    m_VectorSensor.AddObservation(-1.0f);
-                    // Debug.Log(-1.0f);
+                    GameObject item = interactableObjects[interObjIdx];
+                    interObjIdx++;
+                    // add position of the item relative to the agent
+                    Vector3 itemPos = grid
+                        .WorldToGridCoordinates(item.transform.position);
+                    Vector3 itemPosRel = itemPos - agentPos;
+                    m_VectorSensor.AddObservation( 
+                        (itemPosRel.x + gridMaxX) / gridMaxX - 1 );
+                    m_VectorSensor.AddObservation( 
+                        (itemPosRel.z + gridMaxZ) / gridMaxZ - 1 );
+                    // Debug.Log(((itemPosRel.x + gridMaxX) / gridMaxX - 1 ) + ", " + ((itemPosRel.z + gridMaxZ) / gridMaxZ - 1 ));
+
+                    // request featurevector
+                    if (!m_Academy.noObjPropForVector)
+                    {
+                        m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(item));
+                    }
+                }
+                else
+                {
+                    // Debug.Log("Empty Item");
+                    for (int k = 0; k < 2 + m_FeatureVecLength; k++)
+                    {
+                        m_VectorSensor.AddObservation(-1.0f);
+                        // Debug.Log(-1.0f);
+                    }
                 }
             }
         }
 
-        // add base properties
-        int maxNumBases = m_Academy.areaSettings.baseTypesToUse
-            * m_Academy.areaSettings.numberPerBaseType;
-        for (int i = 0; i < maxNumBases; i++)
+        GameObject[] baseObjects = m_Area.GetBaseAreas();
+        int baseObjIdx = 0;
+        for (int i = 0; i < m_Academy.areaSettings.baseTypesToUse; i++)
         {
-            // Debug.Log("Base " + i);
-            if (i < m_Area.GetBaseAreas().Length && m_Area.GetBaseAreas()[i] != null)
+            string currentType = m_Academy.areaSettings.baseObjects[i]
+                .GetComponent<BaseController>().typeName;
+            for(int j = 0; j < m_Academy.areaSettings.numberPerBaseType; j++)
             {
-                GameObject baseObj = m_Area.GetBaseAreas()[i];
-                // add position of the item relative to the agent
-                Vector3 basePos = grid
-                    .WorldToGridCoordinates(baseObj.transform.position);
-                Vector3 basePosRel = basePos - agentPos;
-                m_VectorSensor.AddObservation( 
-                    (basePosRel.x + gridMaxX) / gridMaxX - 1 );
-                m_VectorSensor.AddObservation( 
-                    (basePosRel.z + gridMaxZ) / gridMaxZ - 1 );
-
-                // Debug.Log(((basePosRel.x + gridMaxX) / gridMaxX - 1 ) + ", " + ((basePosRel.z + gridMaxZ) / gridMaxZ - 1 ));
-                
-                m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(baseObj)); 
-            }
-            else 
-            {
-                // Debug.Log("Empty Base");
-                for (int j = 0; j < 2 + m_FeatureVectorDefinition.VectorLength; j++)
+                if (baseObjIdx < baseObjects.Length &&
+                    baseObjects[baseObjIdx]
+                        .GetComponent<BaseController>().typeName == currentType)
                 {
-                    m_VectorSensor.AddObservation(-1.0f);
-                //    Debug.Log(-1.0f);
+                    GameObject baseArea = baseObjects[baseObjIdx];
+                    baseObjIdx++;
+                    // add position of the item relative to the agent
+                    Vector3 baseAreaPos = grid
+                        .WorldToGridCoordinates(baseArea.transform.position);
+                    Vector3 baseAreaPosRel = baseAreaPos - agentPos;
+                    m_VectorSensor.AddObservation( 
+                        (baseAreaPosRel.x + gridMaxX) / gridMaxX - 1 );
+                    m_VectorSensor.AddObservation( 
+                        (baseAreaPosRel.z + gridMaxZ) / gridMaxZ - 1 );
+                    // Debug.Log(((baseAreaPosRel.x + gridMaxX) / gridMaxX - 1 ) + ", " + ((baseAreaPosRel.z + gridMaxZ) / gridMaxZ - 1 ));
+
+                    // request featurevector
+                    if (!m_Academy.noObjPropForVector)
+                    {
+                        m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(baseArea));
+                    }
+                }
+                else
+                {
+                    // Debug.Log("Empty Item");
+                    for (int k = 0; k < 2 + m_FeatureVecLength; k++)
+                    {
+                        m_VectorSensor.AddObservation(-1.0f);
+                        // Debug.Log(-1.0f);
+                    }
                 }
             }
         }

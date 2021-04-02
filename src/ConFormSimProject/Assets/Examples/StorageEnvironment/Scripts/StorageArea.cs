@@ -29,8 +29,10 @@ public class StorageArea : MonoBehaviour
     public int m_GridSizeX;
     public int m_GridSizeZ;
 
+    // List of items sorted by typeName in ObjectController
     private List<GameObject> m_objects;
     private int m_NumItemTypes;
+    // List of base areas sorted by typeName in BaseController
     private List<GameObject> m_baseAreas;
     private int m_NumBaseTypes;
     private List<GameObject> m_baseAreaObjs;
@@ -437,6 +439,10 @@ public class StorageArea : MonoBehaviour
             numBaseAreas -= (xSize * zSize);
             SpawnBaseTile(basePrefab, xSize, zSize);
         }
+
+        m_baseAreas.Sort((x, y) => 
+            x.GetComponent<BaseController>().typeName.CompareTo(
+                y.GetComponent<BaseController>().typeName));
     }
 
     /// <summary>
@@ -549,6 +555,9 @@ public class StorageArea : MonoBehaviour
             m_NumItemTypes * m_Academy.itemSettings.numberPerItemTypeMin,
             m_NumItemTypes * m_Academy.itemSettings.numberPerItemType);
         SpawnItems(numItems);
+        m_objects.Sort((x, y) => 
+            x.GetComponent<ObjectController>().typeName.CompareTo(
+                y.GetComponent<ObjectController>().typeName));
     }
 
     /// <summary>

@@ -5,7 +5,7 @@ using ConFormSim.Actions;
 
 public class ObjectController : MonoBehaviour
 {
-    public bool isInShelf = false;
+    public string typeName = "";
     public bool isInCorrectBaseArea = false;
 
     public bool gotDeliveredReward = false;
