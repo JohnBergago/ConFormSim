@@ -162,12 +162,9 @@ namespace ConFormSim.ObjectProperties
 
         public void OnDestroy()
         {
-            if (availableProperties != null)
-            {
-                // when this provider is destroyed unregister from the feature
-                // vector definition.
-                availableProperties.RemoveOPP(this);
-            }
+            // when this provider is destroyed unregister from the feature
+            // vector definition.
+            availableProperties.RemoveOPP(this);
         }
 
         public void Reset()
@@ -333,7 +330,7 @@ namespace ConFormSim.ObjectProperties
             }
             else
             {
-                Debug.LogWarning("There is no settings entry for the key "
+                throw new WarningException("There is no settings entry for the key "
                     + name + " in AvailableProperties. Cannot add property.");
             }
         }
