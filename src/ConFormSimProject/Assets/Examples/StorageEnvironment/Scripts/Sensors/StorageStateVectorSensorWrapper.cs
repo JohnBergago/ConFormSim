@@ -3,6 +3,7 @@ using UnityEngine;
 using Unity.MLAgents.Sensors;
 using ConFormSim.ObjectProperties;
 using ConFormSim.Sensors;
+using System.Linq;
 
 /// <summary>
 /// A wrapper class that wraps a VectorSensor and fills it with information
@@ -16,7 +17,8 @@ public class StorageStateVectorSensorWrapper : ISensor
 
     VectorSensor m_VectorSensor;
     int m_NumPropertiesPerObject;
-    int m_FeatureVecLength = 0;
+    int m_numTargetTags = 0;
+    int m_numBaseTags = 0;
     FeatureVectorDefinition m_FeatureVectorDefinition;
 
     /// <summary>
@@ -58,22 +60,17 @@ public class StorageStateVectorSensorWrapper : ISensor
         // Properties per item and base: position + properties from requester
         m_NumPropertiesPerObject = 2 + m_Academy.areaSettings.baseTypesToUse;
 
-        if(m_Academy.noObjPropForVector)
-        {
-            Debug.Log("Not using Feature Vector for Vector observations.");
-            m_FeatureVecLength = 0;
-        }
-        else
-        {
-            m_FeatureVecLength = featureVectorDefinition.VectorLength;
-        }
+
+        m_numTargetTags = featureVectorDefinition.Properties["targetTag"].lengthInFeatureVector;
+        m_numBaseTags = featureVectorDefinition.Properties["baseTag"].lengthInFeatureVector;
+
 
         // calculate size of the sensor
         int observationSize =
             // Agent position (x, z, rot)  
             3       
-            + maxNumItems * (2 + m_FeatureVecLength)
-            + maxNumBases * (2 + m_FeatureVecLength);
+            + maxNumItems * (2 + m_numTargetTags)
+            + maxNumBases * (2 + m_numBaseTags);
         Debug.Log("Observation Size: " + observationSize);
         m_VectorSensor = new VectorSensor(observationSize, name);
     }
@@ -147,16 +144,13 @@ public class StorageStateVectorSensorWrapper : ISensor
                         (itemPosRel.z + gridMaxZ) / gridMaxZ - 1 );
                     // Debug.Log(((itemPosRel.x + gridMaxX) / gridMaxX - 1 ) + ", " + ((itemPosRel.z + gridMaxZ) / gridMaxZ - 1 ));
 
-                    // request featurevector
-                    if (!m_Academy.noObjPropForVector)
-                    {
-                        m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(item));
-                    }
+                    // request target tag
+                    m_VectorSensor.AddObservation(RequestFeatureFromObject(item, "targetTag"));
                 }
                 else
                 {
                     // Debug.Log("Empty Item");
-                    for (int k = 0; k < 2 + m_FeatureVecLength; k++)
+                    for (int k = 0; k < 2 + m_numTargetTags; k++)
                     {
                         m_VectorSensor.AddObservation(-1.0f);
                         // Debug.Log(-1.0f);
@@ -189,16 +183,13 @@ public class StorageStateVectorSensorWrapper : ISensor
                         (baseAreaPosRel.z + gridMaxZ) / gridMaxZ - 1 );
                     // Debug.Log(((baseAreaPosRel.x + gridMaxX) / gridMaxX - 1 ) + ", " + ((baseAreaPosRel.z + gridMaxZ) / gridMaxZ - 1 ));
 
-                    // request featurevector
-                    if (!m_Academy.noObjPropForVector)
-                    {
-                        m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(baseArea));
-                    }
+                    // request base tag
+                    m_VectorSensor.AddObservation(RequestFeatureFromObject(baseArea, "baseTag"));
                 }
                 else
                 {
                     // Debug.Log("Empty Item");
-                    for (int k = 0; k < 2 + m_FeatureVecLength; k++)
+                    for (int k = 0; k < 2 + m_numBaseTags; k++)
                     {
                         m_VectorSensor.AddObservation(-1.0f);
                         // Debug.Log(-1.0f);
@@ -208,17 +199,17 @@ public class StorageStateVectorSensorWrapper : ISensor
         }
     }
 
-    List<float> RequestFeatureVectorFromObject(GameObject gameObject)
+    float[] RequestFeatureFromObject(GameObject gameObject, string featureName)
     {
         // request featurevector
         ObjectPropertyProvider objectPropertyProvider;
         if (gameObject.TryGetComponent<ObjectPropertyProvider>(out objectPropertyProvider))
         {
-            return objectPropertyProvider.GetFeatureVector();
+            return objectPropertyProvider.GetObjectProperty(featureName).GetFeatureVector();
         }
         else
         {
-            return m_FeatureVectorDefinition.GetDefaultFeatureVector();
+            return m_FeatureVectorDefinition.Properties[featureName].defaultValue.GetFeatureVector();
         }
     }
 

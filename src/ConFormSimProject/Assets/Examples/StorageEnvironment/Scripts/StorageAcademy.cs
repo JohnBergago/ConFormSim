@@ -74,7 +74,6 @@ public class StorageAcademy : MonoBehaviour
     public bool useVisual;
     public bool useRayPerception;
     public bool useObjectPropertyCamera;
-    public bool noObjPropForVector;
 
     public List<Color32> colorPool; 
 
@@ -537,11 +536,6 @@ public class StorageAcademy : MonoBehaviour
             .GetWithDefault(
                 "useObjectPropertyCamera", 
                 useObjectPropertyCameraDefault) == 0.0f ? false : true;
-        float noObjPropForVectorDefault = noObjPropForVector ? 1.0f : 0.0f;
-        noObjPropForVector = envPropertiesChannel
-            .GetWithDefault(
-                "noObjectPropForVector", 
-                noObjPropForVectorDefault) == 0.0f ? false : true;
         numTrainAreas = (int) envPropertiesChannel
             .GetWithDefault("numTrainAreas", numTrainAreas);
         taskLevel = (int) envPropertiesChannel
