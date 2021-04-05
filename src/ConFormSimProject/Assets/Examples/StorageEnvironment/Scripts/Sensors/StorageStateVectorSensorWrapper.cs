@@ -58,15 +58,7 @@ public class StorageStateVectorSensorWrapper : ISensor
         // Properties per item and base: position + properties from requester
         m_NumPropertiesPerObject = 2 + m_Academy.areaSettings.baseTypesToUse;
 
-        if(m_Academy.noObjPropForVector)
-        {
-            Debug.Log("Not using Feature Vector for Vector observations.");
-            m_FeatureVecLength = 0;
-        }
-        else
-        {
-            m_FeatureVecLength = featureVectorDefinition.VectorLength;
-        }
+        m_FeatureVecLength = featureVectorDefinition.VectorLength;
 
         // calculate size of the sensor
         int observationSize =
@@ -148,10 +140,8 @@ public class StorageStateVectorSensorWrapper : ISensor
                     // Debug.Log(((itemPosRel.x + gridMaxX) / gridMaxX - 1 ) + ", " + ((itemPosRel.z + gridMaxZ) / gridMaxZ - 1 ));
 
                     // request featurevector
-                    if (!m_Academy.noObjPropForVector)
-                    {
-                        m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(item));
-                    }
+                    m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(item));
+
                 }
                 else
                 {
@@ -190,10 +180,7 @@ public class StorageStateVectorSensorWrapper : ISensor
                     // Debug.Log(((baseAreaPosRel.x + gridMaxX) / gridMaxX - 1 ) + ", " + ((baseAreaPosRel.z + gridMaxZ) / gridMaxZ - 1 ));
 
                     // request featurevector
-                    if (!m_Academy.noObjPropForVector)
-                    {
-                        m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(baseArea));
-                    }
+                    m_VectorSensor.AddObservation(RequestFeatureVectorFromObject(baseArea));
                 }
                 else
                 {

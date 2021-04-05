@@ -269,10 +269,13 @@ public class StorageAcademy : MonoBehaviour
         isWallSetting.defaultValue = isAgentProperty;
 
         featureVectorDefinition.AddPropertySettings("color", colorSetting);
-        featureVectorDefinition.AddPropertySettings("baseTag", baseTagSettings);
-        featureVectorDefinition.AddPropertySettings("targetTag", targetTagSettings);
-        featureVectorDefinition.AddPropertySettings("isAgent", isAgentSetting);
-        featureVectorDefinition.AddPropertySettings("isWall", isWallSetting);
+        if (!this.noObjPropForVector)
+        {
+            featureVectorDefinition.AddPropertySettings("baseTag", baseTagSettings);
+            featureVectorDefinition.AddPropertySettings("targetTag", targetTagSettings);
+            featureVectorDefinition.AddPropertySettings("isAgent", isAgentSetting);
+            featureVectorDefinition.AddPropertySettings("isWall", isWallSetting);
+        }
     }
 
     public void Update()
@@ -493,7 +496,7 @@ public class StorageAcademy : MonoBehaviour
 
                 opp.AvailableProperties = featureVectorDefinition;
                 EncodedStringListProperty baseTagsProp = ScriptableObject.CreateInstance<EncodedStringListProperty>();
-                baseTagsProp.ApplySettings(opp.AvailableProperties.Properties["baseTag"]);
+                // baseTagsProp.ApplySettings(opp.AvailableProperties.Properties["baseTag"]);
                 baseTagsProp.stringValues = baseTagsList.ToArray();
                 opp.SetObjectProperty("baseTag", baseTagsProp);
                 ColorObjectProperty colorProp = ScriptableObject.CreateInstance<ColorObjectProperty>();
