@@ -17,7 +17,7 @@ machine. Change directory to your target location and run the following command:
 git clone https://github.com/JohnBergago/ConFormSim.git
 ```
 
-To download all the submodules execute the setup script:
+To download all the submodules, execute the setup script:
 ```bash
 cd ConFormSim
 ./setup.sh
@@ -39,7 +39,7 @@ Then copy the contents of `src/ml-imagesynthesis/Assets/ImageSynthesis` to
 ConFormSim makes use of the [Serialized Dictionary
 Lite](https://assetstore.unity.com/packages/tools/utilities/serialized-dictionary-lite-110992)
 Implementation by RotaryHeart, to provide a nice UI in the Unity Editor and to
-allow a high modularity. However, this Library is not available as Unity Package
+allow modularity. However, this Library is not available as Unity Package
 in the Unity Package Manager. Therefore, it is not in the package
 `manifest.json`. You have to download it from the Asset Store.
 
@@ -47,10 +47,10 @@ in the Unity Package Manager. Therefore, it is not in the package
    [link](https://assetstore.unity.com/packages/tools/utilities/serialized-dictionary-lite-110992)
    and log in to the Unity Asset Store with your Unity ID. Click `Add to my
    Assets` on the right side of the page. 
-1. **Open the ConFormSimProject in Unity**: In the Projects tab in the UnityHub
+2. **Open the ConFormSimProject in Unity**: In the Projects tab in the UnityHub
    click `Add` and navigate to the `src/ConFormSimProject` directory. Choose the
    directory and open the project in Unity.
-1. **Add the Serialized Dictionary Asset to the Project**: The project will load
+3. **Add the Serialized Dictionary Asset to the Project**: The project will load
    with some errors, mostly complaining about missing namespace references and
    unknown classes. Open the Asset Store either by clicking on the Asset Store
    tab in Unity, or by using the Menu `Ẁindow > Asset Store`. If you haven't
@@ -59,7 +59,7 @@ in the Unity Package Manager. Therefore, it is not in the package
    Store" height="350px" src="docs/../images/my_assets.png"><br> Import the
    Serialized Dictionary to your project. <img alt="Import the Serialized
    Dictionary Asset" height="343px" src="docs/../images/Import_Dict.png"><br>
-1. **Move the Serialized Dictionary Folder to ConFormSim**: To create an
+4. **Move the Serialized Dictionary Folder to ConFormSim**: To create an
    all-in-one package, move the `RotaryHeart` folder to `ConFormSim/External` in
    your Assets. <br> <img alt="Move RotaryHeart to ConFormSim/External"
    height="200px" src="docs/../images/Move_RotaryHeart.png">

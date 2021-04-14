@@ -8,15 +8,15 @@ faster prototyping._
 
 **ConFormSim** is an open-source extension for the [Unity ML-Agents
 Toolkit](https://github.com/Unity-Technologies/ml-agents). It offers useful
-features on the Unity site, to allow an easy and fast prototyping. The focus is
-on improvements that facilitate a research in concept formation. Therefore,
-ConFormSim provides an easy configurable and modular property system, which
-allows more abstract and multimodal perceptions. A new ActionProvider component
+features on the Unity site to allow easy and fast prototyping. The focus is
+on improvements that facilitate research in concept formation. Therefore,
+ConFormSim provides an easily configurable and modular property system, allowing
+more abstract and multimodal perceptions. A new ActionProvider component
 allows modular action sets to test different action abstraction levels and
 switch easily between them. These features allow to make a task and environment
 more symbolic (abstract levels) or subsymbolic (distributed, control problems).
-This supports research on the formation of relational representations, knowledge
-transfer, generalization and data efficiency. 
+The toolkit supports research on the formation of relational representations, knowledge
+transfer, generalization, and data efficiency. 
 
 
 ## Features
